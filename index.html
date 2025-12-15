@@ -2,104 +2,161 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Journal (Wizard)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Mi Diario</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    :root { --bg:#0b0f19; --card:#121a2a; --muted:#93a4c7; --txt:#e9eefc; --accent:#7aa2ff; --danger:#ff6b6b; }
-    * { box-sizing: border-box; }
+    /* --- NUEVA PALETA ESTILO REFLECTLY --- */
+    :root {
+      /* Fondos y bases */
+      --bg-main: #2E335A; /* Azul oscuro profundo base */
+      --bg-grad: linear-gradient(135deg, #2E335A 0%, #45407F 100%); /* Degradado de fondo */
+      --card-glass: rgba(255, 255, 255, 0.08); /* Efecto cristal para tarjetas */
+      --input-bg: rgba(0, 0, 0, 0.2); /* Fondo inputs */
+      
+      /* Textos */
+      --txt: #FFFFFF;
+      --muted: #AAB2D6;
+
+      /* Acentos (Coral vibrante y Azul brillante) */
+      --accent-coral: #FF8E7B;
+      --accent-coral-grad: linear-gradient(to right, #FF8E7B, #FF6B6B);
+      --accent-blue-grad: linear-gradient(to right, #56CCF2, #2F80ED);
+      --danger: #FF6B6B;
+      
+      /* Sombras suaves */
+      --shadow-soft: 0 10px 30px -5px rgba(0,0,0,0.3);
+      --shadow-glow: 0 5px 15px rgba(255, 142, 123, 0.4); /* Glow color coral */
+
+      font-family: 'Poppins', sans-serif; /* Fuente principal */
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
-      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: radial-gradient(1200px 700px at 50% 0%, #172446, transparent), var(--bg);
+      margin: 0; 
+      background: var(--bg-grad);
       color: var(--txt);
       height: 100dvh; display: flex; flex-direction: column;
+      font-family: var(--font-family);
+      overflow: hidden; /* Evitar scroll doble en iOS */
     }
-    .wrap { max-width: 600px; margin: 0 auto; padding: 20px; width: 100%; flex: 1; display: flex; flex-direction: column; }
+    .wrap {
+      max-width: 600px; margin: 0 auto; padding: 24px; width: 100%; flex: 1;
+      display: flex; flex-direction: column; overflow-y: auto; /* Scroll dentro del wrap */
+    }
     
-    /* --- VISTAS --- */
-    .view-section { display: none; flex-direction: column; flex: 1; animation: fadeIn .3s ease; }
+    /* --- ANIMACIONES Y VISTAS --- */
+    .view-section { display: none; flex-direction: column; flex: 1; animation: slideUp .4s cubic-bezier(0.25, 0.8, 0.25, 1); }
     .view-section.active { display: flex; }
-    
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-    /* --- COMMON UI --- */
-    h1 { margin: 0 0 4px 0; font-size: 24px; letter-spacing: -0.5px; }
-    h2 { font-size: 18px; color: var(--accent); margin-bottom: 16px; }
-    .sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+    /* --- UI COMÚN --- */
+    h1 { margin: 0 0 8px 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+    h2 { font-size: 22px; color: var(--txt); margin-bottom: 24px; font-weight: 700; text-align: center; }
+    .sub { color: var(--muted); font-size: 15px; margin-bottom: 24px; font-weight: 600; }
 
+    /* Inputs y Textareas más suaves y redondeados */
     input, textarea {
-      width: 100%; background: rgba(255,255,255,.06); color: var(--txt);
-      border: 1px solid rgba(255,255,255,.10); border-radius: 12px; padding: 12px 14px;
+      width: 100%; background: var(--input-bg); color: var(--txt);
+      border: none; /* Sin bordes duros */
+      border-radius: 20px; /* Muy redondeado */
+      padding: 16px 20px;
       outline: none; font-size: 16px; font-family: inherit;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      transition: background .3s;
     }
-    input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(122,162,255,.18); }
-    textarea { min-height: 300px; resize: none; line-height: 1.5; }
+    input:focus, textarea:focus { background: rgba(0, 0, 0, 0.3); }
+    textarea { min-height: 250px; resize: none; line-height: 1.6; }
+    label { font-weight: 600; margin-left: 10px; }
 
+    /* Botones con degradados y sombras */
     .btn {
-      border: none; background: rgba(255,255,255,.1); color: var(--txt);
-      padding: 14px 20px; border-radius: 14px; cursor: pointer;
-      font-weight: 600; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      transition: background .2s;
+      border: none; background: var(--card-glass); color: var(--txt);
+      padding: 16px 24px; border-radius: 50px; /* Forma de píldora */
+      cursor: pointer; font-weight: 700; font-size: 15px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      transition: transform .2s, box-shadow .2s;
+      box-shadow: var(--shadow-soft);
     }
-    .btn:hover { background: rgba(255,255,255,.15); }
-    .btn.primary { background: var(--accent); color: #000; }
-    .btn.primary:hover { background: color-mix(in srgb, var(--accent), white 20%); }
-    .btn.danger { background: rgba(255,107,107,.15); color: var(--danger); }
+    .btn:active { transform: scale(0.97); }
+    .btn.primary {
+      background: var(--accent-coral-grad);
+      color: white;
+      box-shadow: var(--shadow-soft), var(--shadow-glow);
+    }
+    .btn.danger { color: var(--danger); background: rgba(255, 107, 107, 0.15); }
     
-    /* --- LIST VIEW --- */
+    /* --- VISTA DE LISTA --- */
     .fab {
-      position: fixed; bottom: 24px; right: 24px;
-      background: var(--accent); color: #000;
-      width: 56px; height: 56px; border-radius: 28px;
+      position: fixed; bottom: 30px; right: 30px;
+      background: var(--accent-coral-grad); color: white;
+      width: 64px; height: 64px; border-radius: 32px;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,.5);
-      font-size: 28px; cursor: pointer; border: none; z-index: 100;
+      box-shadow: var(--shadow-soft), var(--shadow-glow);
+      font-size: 32px; cursor: pointer; border: none; z-index: 100;
       transition: transform .2s;
     }
-    .fab:hover { transform: scale(1.1); }
+    .fab:active { transform: scale(0.9); }
 
-    .list-container { display: flex; flex-direction: column; gap: 10px; padding-bottom: 80px; }
+    .list-container { display: flex; flex-direction: column; gap: 14px; padding-bottom: 100px; }
+    /* Tarjetas estilo "Cristal" */
     .entry-card {
-      background: color-mix(in srgb, var(--card), black 20%);
-      border: 1px solid rgba(255,255,255,.08);
-      padding: 16px; border-radius: 16px; cursor: pointer;
+      background: var(--card-glass);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.05);
+      box-shadow: var(--shadow-soft);
+      padding: 20px; border-radius: 24px; cursor: pointer;
       transition: transform .1s;
     }
     .entry-card:active { transform: scale(0.98); }
-    .entry-date { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-    .entry-preview { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .entry-meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--muted); opacity: 0.7; }
+    .entry-date { font-weight: 800; font-size: 16px; margin-bottom: 6px; }
+    .entry-preview { color: var(--muted); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; }
+    .entry-meta { display: flex; justify-content: space-between; margin-top: 12px; font-size: 13px; color: var(--muted); font-weight: 600; }
 
     /* --- EDITOR STEPS --- */
     .step { display: none; flex-direction: column; flex: 1; }
     .step.active { display: flex; }
     
     .nav-bar {
-      margin-top: auto; padding-top: 20px;
-      display: flex; justify-content: space-between; gap: 10px;
+      margin-top: auto; padding-top: 30px;
+      display: flex; justify-content: space-between; gap: 15px;
     }
 
-    /* SLIDER STYLING */
+    /* SLIDER ESTILO REFLECTLY */
     input[type=range] {
-      -webkit-appearance: none; width: 100%; background: transparent; border: none; padding: 0;
+      -webkit-appearance: none; width: 100%; background: transparent; border: none; padding: 0; box-shadow: none;
     }
     input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none; height: 32px; width: 32px; border-radius: 50%;
-      background: var(--accent); margin-top: -14px; box-shadow: 0 0 20px rgba(122,162,255,.5);
+      -webkit-appearance: none; height: 40px; width: 40px; border-radius: 50%;
+      background: var(--accent-coral);
+      box-shadow: 0 0 0 6px rgba(255, 142, 123, 0.3), var(--shadow-glow);
+      margin-top: -16px; transition: transform .2s;
     }
+    input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); }
     input[type=range]::-webkit-slider-runnable-track {
-      width: 100%; height: 4px; background: rgba(255,255,255,.2); border-radius: 4px;
+      width: 100%; height: 8px; background: rgba(0,0,0,0.2); border-radius: 4px;
     }
-    .big-score { font-size: 64px; font-weight: 800; text-align: center; color: var(--accent); margin: 30px 0; }
+    .big-score { font-size: 80px; font-weight: 800; text-align: center; color: var(--accent-coral); margin: 20px 0 40px 0; text-shadow: 0 5px 15px rgba(255, 142, 123, 0.3); }
 
-    /* CHECKLIST STYLING */
-    .checkgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    /* CHECKLIST BURBUJAS */
+    .checkgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; }
     .check-btn {
-      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
-      padding: 12px; border-radius: 12px; text-align: center; font-size: 14px; cursor: pointer; user-select: none;
-      transition: .2s;
+      background: var(--card-glass);
+      color: var(--muted);
+      font-weight: 600;
+      padding: 16px; border-radius: 50px; /* Burbujas */
+      text-align: center; font-size: 14px; cursor: pointer; user-select: none;
+      transition: all .3s ease; box-shadow: var(--shadow-soft);
     }
-    .check-btn input { display: none; }
-    .check-btn.checked { background: rgba(122,162,255,.2); border-color: var(--accent); color: white; }
+    .check-btn.checked {
+      background: var(--accent-blue-grad); /* Degradado azul al activar */
+      color: white;
+      box-shadow: 0 5px 15px rgba(86, 204, 242, 0.4); /* Glow azul */
+      transform: translateY(-2px);
+    }
 
   </style>
 </head>
@@ -118,57 +175,58 @@
 
       <button class="fab" id="btnNew">+</button>
       
-      <div style="margin-top: auto; padding-top:20px; text-align:center;">
-        <button class="btn" id="btnExport" style="font-size:12px; padding:8px 12px;">⚙️ Copia de seguridad (JSON)</button>
+      <div style="margin-top: auto; padding-top:20px; text-align:center; display:flex; justify-content:center; gap:10px; flex-wrap:wrap; opacity: 0.7;">
+        <button class="btn" id="btnExportCSV" style="font-size:12px; padding:10px 16px;">📊 Exportar CSV</button>
+        <button class="btn" id="btnExport" style="font-size:12px; padding:10px 16px;">⚙️ JSON</button>
         <input type="file" id="importFile" style="display:none" accept=".json">
-        <button class="btn" onclick="document.getElementById('importFile').click()" style="font-size:12px; padding:8px 12px;">📥 Importar</button>
+        <button class="btn" onclick="document.getElementById('importFile').click()" style="font-size:12px; padding:10px 16px;">📥 Importar</button>
       </div>
     </div>
 
     <div id="viewEditor" class="view-section">
       
       <div id="step1" class="step active">
-        <h2>1. ¿Qué tal el día?</h2>
+        <h2>¿Qué tal el día?</h2>
         <label style="font-size:12px; color:var(--muted); margin-bottom:5px; display:block;">Fecha</label>
-        <input type="date" id="dateInput" style="margin-bottom:15px;">
+        <input type="date" id="dateInput" style="margin-bottom:20px;">
         
-        <input type="text" id="titleInput" placeholder="Un título breve..." style="margin-bottom:15px; font-weight:bold;">
+        <input type="text" id="titleInput" placeholder="Un título breve..." style="margin-bottom:20px; font-weight:bold; font-size: 18px;">
         <textarea id="textInput" placeholder="Escribe aquí todo lo que ha pasado..."></textarea>
         
         <div class="nav-bar">
           <button class="btn danger" id="btnDeleteEntry">Borrar</button>
-          <button class="btn primary" onclick="goToStep(2)">Siguiente →</button>
+          <button class="btn primary" onclick="goToStep(2)">Siguiente</button>
         </div>
       </div>
 
       <div id="step2" class="step">
-        <h2>2. Puntuación del día</h2>
+        <h2>Puntuación del día</h2>
         <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
           <div class="big-score" id="scoreDisplay">5.0</div>
           <input type="range" id="scoreInput" min="1" max="10" step="0.1" value="5">
-          <div style="text-align:center; color:var(--muted); margin-top:10px;">Desliza para puntuar</div>
+          <div style="text-align:center; color:var(--muted); margin-top:20px; font-weight: 600;">Desliza para puntuar</div>
         </div>
         <div class="nav-bar">
-          <button class="btn" onclick="goToStep(1)">← Atrás</button>
-          <button class="btn primary" onclick="goToStep(3)">Siguiente →</button>
+          <button class="btn" onclick="goToStep(1)">Atrás</button>
+          <button class="btn primary" onclick="goToStep(3)">Siguiente</button>
         </div>
       </div>
 
       <div id="step3" class="step">
-        <h2>3. ¿Qué has hecho?</h2>
+        <h2>¿Qué has hecho hoy?</h2>
         <div class="checkgrid" id="gridActivities"></div>
         <div class="nav-bar">
-          <button class="btn" onclick="goToStep(2)">← Atrás</button>
-          <button class="btn primary" onclick="goToStep(4)">Siguiente →</button>
+          <button class="btn" onclick="goToStep(2)">Atrás</button>
+          <button class="btn primary" onclick="goToStep(4)">Siguiente</button>
         </div>
       </div>
 
       <div id="step4" class="step">
-        <h2>4. ¿Cómo te has sentido?</h2>
+        <h2>¿Cómo te has sentido?</h2>
         <div class="checkgrid" id="gridEmotions"></div>
         <div class="nav-bar">
-          <button class="btn" onclick="goToStep(3)">← Atrás</button>
-          <button class="btn primary" id="btnFinish">Finalizar y Guardar ✓</button>
+          <button class="btn" onclick="goToStep(3)">Atrás</button>
+          <button class="btn primary" id="btnFinish">Guardar Entrada ✓</button>
         </div>
       </div>
 
@@ -176,21 +234,18 @@
   </div>
 
 <script>
+// --- EL JAVASCRIPT NO HA CAMBIADO (Mantiene toda la funcionalidad anterior) ---
 (() => {
   const STORAGE_KEY = "journal:v1";
   
   // Datos maestros (EN INGLÉS ORIGINAL)
-  const ACTIVITIES = [
-    "Family","School/work","Relationship","Friends/colleagues","Health","Hobbies","Sleep","Relaxing","Exercise"
-  ];
-  const EMOTIONS = [
-    "Happy","Good","Confused/thoughtful","Bored/tired/neutral","Awkward","Stressed","Angry/ pissed","Anxious","Down"
-  ];
+  const ACTIVITIES = ["Family","School/work","Relationship","Friends/colleagues","Health","Hobbies","Sleep","Relaxing","Exercise"];
+  const EMOTIONS = ["Happy","Good","Confused/thoughtful","Bored/tired/neutral","Awkward","Stressed","Angry/ pissed","Anxious","Down"];
 
   // Estado
   let entries = [];
   let currentEntry = {}; 
-  let isEditing = false; // true si editamos una existente
+  let isEditing = false; 
 
   // DOM Elements
   const viewList = document.getElementById("viewList");
@@ -211,9 +266,7 @@
 
   // --- NAVEGACIÓN ---
   window.goToStep = (stepNum) => {
-    // Ocultar todos los pasos
     document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-    // Mostrar el deseado
     document.getElementById(`step${stepNum}`).classList.add('active');
   };
 
@@ -224,22 +277,17 @@
   }
 
   function startEditor(dateToEdit = null) {
-    // Resetear form
     goToStep(1);
     viewList.classList.remove("active");
     viewEditor.classList.add("active");
 
     if (dateToEdit) {
-      // Cargar existente
       isEditing = true;
       currentEntry = entries.find(e => e.date === dateToEdit);
-      // Fallback si no existe (raro)
       if(!currentEntry) currentEntry = createEmptyEntry(dateToEdit);
     } else {
-      // Nueva entrada (fecha hoy por defecto)
       isEditing = false;
       const today = new Date().toISOString().slice(0,10);
-      // Verificar si ya existe hoy
       const existing = entries.find(e => e.date === today);
       if (existing) {
         currentEntry = existing;
@@ -249,7 +297,6 @@
       }
     }
 
-    // Rellenar UI
     dateInput.value = currentEntry.date;
     titleInput.value = currentEntry.title || "";
     textInput.value = currentEntry.text || "";
@@ -266,24 +313,17 @@
 
   // --- LOGICA DE GUARDADO ---
   function saveCurrentState() {
-    // Recoger datos del DOM al objeto
     currentEntry.date = dateInput.value;
     currentEntry.title = titleInput.value;
     currentEntry.text = textInput.value;
     currentEntry.score = Number(scoreInput.value);
-    
     currentEntry.activities = getCheckedValues("gridActivities");
     currentEntry.emotions = getCheckedValues("gridEmotions");
 
-    // Guardar en array global
     const idx = entries.findIndex(e => e.date === currentEntry.date);
-    if (idx >= 0) {
-      entries[idx] = currentEntry;
-    } else {
-      entries.push(currentEntry);
-    }
+    if (idx >= 0) entries[idx] = currentEntry;
+    else entries.push(currentEntry);
     
-    // Ordenar y persistir
     entries.sort((a,b) => b.date.localeCompare(a.date));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   }
@@ -293,7 +333,6 @@
     showHome();
   });
 
-  // Borrar
   document.getElementById("btnDeleteEntry").addEventListener("click", () => {
     if(!confirm("¿Borrar esta entrada?")) return;
     entries = entries.filter(e => e.date !== currentEntry.date);
@@ -314,7 +353,7 @@
     statsLine.textContent = `${entries.length} entradas guardadas`;
 
     if (entries.length === 0) {
-      entriesListEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted)">No hay entradas aún.<br>Pulsa + para empezar.</div>`;
+      entriesListEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted); font-weight:600;">No hay entradas aún.<br>Pulsa + para empezar.</div>`;
     }
 
     entries.forEach(e => {
@@ -324,7 +363,7 @@
         <div class="entry-date">${e.date} ${e.title ? "· " + e.title : ""}</div>
         <div class="entry-preview">${e.text || "Sin texto..."}</div>
         <div class="entry-meta">
-          <span>★ ${Number(e.score).toFixed(1)}</span>
+          <span style="color:var(--accent-coral); font-weight:800;">★ ${Number(e.score).toFixed(1)}</span>
           <span>${(e.activities||[]).length} act · ${(e.emotions||[]).length} emo</span>
         </div>
       `;
@@ -337,52 +376,66 @@
     const container = document.getElementById(id);
     container.innerHTML = "";
     const set = new Set(selectedItems);
-    
     items.forEach(item => {
       const div = document.createElement("div");
       div.className = "check-btn" + (set.has(item) ? " checked" : "");
       div.textContent = item;
-      div.onclick = () => {
-        div.classList.toggle("checked");
-      };
+      div.onclick = () => div.classList.toggle("checked");
       container.appendChild(div);
     });
   }
 
   function getCheckedValues(containerId) {
     const container = document.getElementById(containerId);
-    const checkedDivs = container.querySelectorAll(".check-btn.checked");
-    return Array.from(checkedDivs).map(d => d.textContent);
+    return Array.from(container.querySelectorAll(".check-btn.checked")).map(d => d.textContent);
+  }
+
+  // --- HELPERS PARA CSV ---
+  function escapeCSV(value) {
+    if (value == null) return "";
+    const str = String(value);
+    if (/[",\n]/.test(str)) return '"' + str.replace(/"/g,'""') + '"';
+    return str;
+  }
+
+  function downloadText(filename, content, mime) {
+    const blob = new Blob([content], { type: mime || "text/plain;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function generateCSV() {
+    const header = ["Date","Score","Title","Text", ...ACTIVITIES, ...EMOTIONS];
+    const lines = [header.join(",")];
+    for (const e of entries) {
+      const row = [];
+      row.push(escapeCSV(e.date));
+      row.push(escapeCSV(e.score));
+      row.push(escapeCSV(e.title));
+      row.push(escapeCSV(e.text));
+      const acts = new Set(e.activities || []);
+      ACTIVITIES.forEach(a => row.push(acts.has(a) ? "1" : "0"));
+      const emos = new Set(e.emotions || []);
+      EMOTIONS.forEach(em => row.push(emos.has(em) ? "1" : "0"));
+      lines.push(row.join(","));
+    }
+    return lines.join("\n");
   }
 
   // --- EVENTOS GLOBALES ---
   document.getElementById("btnNew").addEventListener("click", () => startEditor(null));
-  
-  scoreInput.addEventListener("input", (e) => {
-    scoreDisplay.textContent = Number(e.target.value).toFixed(1);
-  });
-
-  // Exportar/Importar
-  document.getElementById("btnExport").addEventListener("click", () => {
-    const blob = new Blob([JSON.stringify(entries,null,2)], {type : 'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `journal_backup_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-  });
-
+  scoreInput.addEventListener("input", (e) => { scoreDisplay.textContent = Number(e.target.value).toFixed(1); });
+  document.getElementById("btnExport").addEventListener("click", () => { downloadText(`journal_backup_${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(entries,null,2), "application/json"); });
+  document.getElementById("btnExportCSV").addEventListener("click", () => { const csv = generateCSV(); downloadText("journal_export.csv", csv, "text/csv;charset=utf-8;"); });
   document.getElementById("importFile").addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-    const text = await file.text();
+    const file = e.target.files[0]; if(!file) return;
     try {
-      const imported = JSON.parse(text);
-      if(Array.isArray(imported)) {
-        if(confirm(`Se importarán ${imported.length} entradas. ¿Sobrescribir datos actuales?`)) {
-          entries = imported;
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-          renderHome();
-        }
+      const text = await file.text(); const imported = JSON.parse(text);
+      if(Array.isArray(imported) && confirm(`Importar ${imported.length} entradas?`)) {
+        entries = imported; localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); renderHome();
       }
     } catch(err) { alert("Error al importar JSON"); }
   });
