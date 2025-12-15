@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Journal (Wizard)</title>
+  <style>
+    :root { --bg:#0b0f19; --card:#121a2a; --muted:#93a4c7; --txt:#e9eefc; --accent:#7aa2ff; --danger:#ff6b6b; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(1200px 700px at 50% 0%, #172446, transparent), var(--bg);
+      color: var(--txt);
+      height: 100dvh; display: flex; flex-direction: column;
+    }
+    .wrap { max-width: 600px; margin: 0 auto; padding: 20px; width: 100%; flex: 1; display: flex; flex-direction: column; }
+    
+    /* --- VISTAS --- */
+    .view-section { display: none; flex-direction: column; flex: 1; animation: fadeIn .3s ease; }
+    .view-section.active { display: flex; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- COMMON UI --- */
+    h1 { margin: 0 0 4px 0; font-size: 24px; letter-spacing: -0.5px; }
+    h2 { font-size: 18px; color: var(--accent); margin-bottom: 16px; }
+    .sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+
+    input, textarea {
+      width: 100%; background: rgba(255,255,255,.06); color: var(--txt);
+      border: 1px solid rgba(255,255,255,.10); border-radius: 12px; padding: 12px 14px;
+      outline: none; font-size: 16px; font-family: inherit;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(122,162,255,.18); }
+    textarea { min-height: 300px; resize: none; line-height: 1.5; }
+
+    .btn {
+      border: none; background: rgba(255,255,255,.1); color: var(--txt);
+      padding: 14px 20px; border-radius: 14px; cursor: pointer;
+      font-weight: 600; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background .2s;
+    }
+    .btn:hover { background: rgba(255,255,255,.15); }
+    .btn.primary { background: var(--accent); color: #000; }
+    .btn.primary:hover { background: color-mix(in srgb, var(--accent), white 20%); }
+    .btn.danger { background: rgba(255,107,107,.15); color: var(--danger); }
+    
+    /* --- LIST VIEW --- */
+    .fab {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--accent); color: #000;
+      width: 56px; height: 56px; border-radius: 28px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,.5);
+      font-size: 28px; cursor: pointer; border: none; z-index: 100;
+      transition: transform .2s;
+    }
+    .fab:hover { transform: scale(1.1); }
+
+    .list-container { display: flex; flex-direction: column; gap: 10px; padding-bottom: 80px; }
+    .entry-card {
+      background: color-mix(in srgb, var(--card), black 20%);
+      border: 1px solid rgba(255,255,255,.08);
+      padding: 16px; border-radius: 16px; cursor: pointer;
+      transition: transform .1s;
+    }
+    .entry-card:active { transform: scale(0.98); }
+    .entry-date { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+    .entry-preview { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .entry-meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--muted); opacity: 0.7; }
+
+    /* --- EDITOR STEPS --- */
+    .step { display: none; flex-direction: column; flex: 1; }
+    .step.active { display: flex; }
+    
+    .nav-bar {
+      margin-top: auto; padding-top: 20px;
+      display: flex; justify-content: space-between; gap: 10px;
+    }
+
+    /* SLIDER STYLING */
+    input[type=range] {
+      -webkit-appearance: none; width: 100%; background: transparent; border: none; padding: 0;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; height: 32px; width: 32px; border-radius: 50%;
+      background: var(--accent); margin-top: -14px; box-shadow: 0 0 20px rgba(122,162,255,.5);
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%; height: 4px; background: rgba(255,255,255,.2); border-radius: 4px;
+    }
+    .big-score { font-size: 64px; font-weight: 800; text-align: center; color: var(--accent); margin: 30px 0; }
+
+    /* CHECKLIST STYLING */
+    .checkgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .check-btn {
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      padding: 12px; border-radius: 12px; text-align: center; font-size: 14px; cursor: pointer; user-select: none;
+      transition: .2s;
+    }
+    .check-btn input { display: none; }
+    .check-btn.checked { background: rgba(122,162,255,.2); border-color: var(--accent); color: white; }
+
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+    
+    <div id="viewList" class="view-section active">
+      <header>
+        <h1>Mi Diario</h1>
+        <div class="sub" id="statsLine">Cargando...</div>
+      </header>
+      
+      <div class="list-container" id="entriesList">
+        </div>
+
+      <button class="fab" id="btnNew">+</button>
+      
+      <div style="margin-top: auto; padding-top:20px; text-align:center;">
+        <button class="btn" id="btnExport" style="font-size:12px; padding:8px 12px;">⚙️ Copia de seguridad (JSON)</button>
+        <input type="file" id="importFile" style="display:none" accept=".json">
+        <button class="btn" onclick="document.getElementById('importFile').click()" style="font-size:12px; padding:8px 12px;">📥 Importar</button>
+      </div>
+    </div>
+
+    <div id="viewEditor" class="view-section">
+      
+      <div id="step1" class="step active">
+        <h2>1. ¿Qué tal el día?</h2>
+        <label style="font-size:12px; color:var(--muted); margin-bottom:5px; display:block;">Fecha</label>
+        <input type="date" id="dateInput" style="margin-bottom:15px;">
+        
+        <input type="text" id="titleInput" placeholder="Un título breve..." style="margin-bottom:15px; font-weight:bold;">
+        <textarea id="textInput" placeholder="Escribe aquí todo lo que ha pasado..."></textarea>
+        
+        <div class="nav-bar">
+          <button class="btn danger" id="btnDeleteEntry">Borrar</button>
+          <button class="btn primary" onclick="goToStep(2)">Siguiente →</button>
+        </div>
+      </div>
+
+      <div id="step2" class="step">
+        <h2>2. Puntuación del día</h2>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+          <div class="big-score" id="scoreDisplay">5.0</div>
+          <input type="range" id="scoreInput" min="1" max="10" step="0.1" value="5">
+          <div style="text-align:center; color:var(--muted); margin-top:10px;">Desliza para puntuar</div>
+        </div>
+        <div class="nav-bar">
+          <button class="btn" onclick="goToStep(1)">← Atrás</button>
+          <button class="btn primary" onclick="goToStep(3)">Siguiente →</button>
+        </div>
+      </div>
+
+      <div id="step3" class="step">
+        <h2>3. ¿Qué has hecho?</h2>
+        <div class="checkgrid" id="gridActivities"></div>
+        <div class="nav-bar">
+          <button class="btn" onclick="goToStep(2)">← Atrás</button>
+          <button class="btn primary" onclick="goToStep(4)">Siguiente →</button>
+        </div>
+      </div>
+
+      <div id="step4" class="step">
+        <h2>4. ¿Cómo te has sentido?</h2>
+        <div class="checkgrid" id="gridEmotions"></div>
+        <div class="nav-bar">
+          <button class="btn" onclick="goToStep(3)">← Atrás</button>
+          <button class="btn primary" id="btnFinish">Finalizar y Guardar ✓</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+(() => {
+  const STORAGE_KEY = "journal:v1";
+  
+  // Datos maestros (EN INGLÉS ORIGINAL)
+  const ACTIVITIES = [
+    "Family","School/work","Relationship","Friends/colleagues","Health","Hobbies","Sleep","Relaxing","Exercise"
+  ];
+  const EMOTIONS = [
+    "Happy","Good","Confused/thoughtful","Bored/tired/neutral","Awkward","Stressed","Angry/ pissed","Anxious","Down"
+  ];
+
+  // Estado
+  let entries = [];
+  let currentEntry = {}; 
+  let isEditing = false; // true si editamos una existente
+
+  // DOM Elements
+  const viewList = document.getElementById("viewList");
+  const viewEditor = document.getElementById("viewEditor");
+  const entriesListEl = document.getElementById("entriesList");
+  const statsLine = document.getElementById("statsLine");
+  
+  // Inputs
+  const dateInput = document.getElementById("dateInput");
+  const titleInput = document.getElementById("titleInput");
+  const textInput = document.getElementById("textInput");
+  const scoreInput = document.getElementById("scoreInput");
+  const scoreDisplay = document.getElementById("scoreDisplay");
+  
+  // Init
+  loadData();
+  renderHome();
+
+  // --- NAVEGACIÓN ---
+  window.goToStep = (stepNum) => {
+    // Ocultar todos los pasos
+    document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+    // Mostrar el deseado
+    document.getElementById(`step${stepNum}`).classList.add('active');
+  };
+
+  function showHome() {
+    viewEditor.classList.remove("active");
+    viewList.classList.add("active");
+    renderHome();
+  }
+
+  function startEditor(dateToEdit = null) {
+    // Resetear form
+    goToStep(1);
+    viewList.classList.remove("active");
+    viewEditor.classList.add("active");
+
+    if (dateToEdit) {
+      // Cargar existente
+      isEditing = true;
+      currentEntry = entries.find(e => e.date === dateToEdit);
+      // Fallback si no existe (raro)
+      if(!currentEntry) currentEntry = createEmptyEntry(dateToEdit);
+    } else {
+      // Nueva entrada (fecha hoy por defecto)
+      isEditing = false;
+      const today = new Date().toISOString().slice(0,10);
+      // Verificar si ya existe hoy
+      const existing = entries.find(e => e.date === today);
+      if (existing) {
+        currentEntry = existing;
+        isEditing = true;
+      } else {
+        currentEntry = createEmptyEntry(today);
+      }
+    }
+
+    // Rellenar UI
+    dateInput.value = currentEntry.date;
+    titleInput.value = currentEntry.title || "";
+    textInput.value = currentEntry.text || "";
+    scoreInput.value = currentEntry.score || 5;
+    scoreDisplay.textContent = Number(scoreInput.value).toFixed(1);
+    
+    renderCheckGrid("gridActivities", ACTIVITIES, currentEntry.activities || []);
+    renderCheckGrid("gridEmotions", EMOTIONS, currentEntry.emotions || []);
+  }
+
+  function createEmptyEntry(date) {
+    return { date, title:"", text:"", score: 5.0, activities:[], emotions:[] };
+  }
+
+  // --- LOGICA DE GUARDADO ---
+  function saveCurrentState() {
+    // Recoger datos del DOM al objeto
+    currentEntry.date = dateInput.value;
+    currentEntry.title = titleInput.value;
+    currentEntry.text = textInput.value;
+    currentEntry.score = Number(scoreInput.value);
+    
+    currentEntry.activities = getCheckedValues("gridActivities");
+    currentEntry.emotions = getCheckedValues("gridEmotions");
+
+    // Guardar en array global
+    const idx = entries.findIndex(e => e.date === currentEntry.date);
+    if (idx >= 0) {
+      entries[idx] = currentEntry;
+    } else {
+      entries.push(currentEntry);
+    }
+    
+    // Ordenar y persistir
+    entries.sort((a,b) => b.date.localeCompare(a.date));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  }
+
+  document.getElementById("btnFinish").addEventListener("click", () => {
+    saveCurrentState();
+    showHome();
+  });
+
+  // Borrar
+  document.getElementById("btnDeleteEntry").addEventListener("click", () => {
+    if(!confirm("¿Borrar esta entrada?")) return;
+    entries = entries.filter(e => e.date !== currentEntry.date);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    showHome();
+  });
+
+  // --- UI RENDER ---
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      entries = raw ? JSON.parse(raw) : [];
+    } catch(e) { entries = []; }
+  }
+
+  function renderHome() {
+    entriesListEl.innerHTML = "";
+    statsLine.textContent = `${entries.length} entradas guardadas`;
+
+    if (entries.length === 0) {
+      entriesListEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted)">No hay entradas aún.<br>Pulsa + para empezar.</div>`;
+    }
+
+    entries.forEach(e => {
+      const card = document.createElement("div");
+      card.className = "entry-card";
+      card.innerHTML = `
+        <div class="entry-date">${e.date} ${e.title ? "· " + e.title : ""}</div>
+        <div class="entry-preview">${e.text || "Sin texto..."}</div>
+        <div class="entry-meta">
+          <span>★ ${Number(e.score).toFixed(1)}</span>
+          <span>${(e.activities||[]).length} act · ${(e.emotions||[]).length} emo</span>
+        </div>
+      `;
+      card.addEventListener("click", () => startEditor(e.date));
+      entriesListEl.appendChild(card);
+    });
+  }
+
+  function renderCheckGrid(id, items, selectedItems) {
+    const container = document.getElementById(id);
+    container.innerHTML = "";
+    const set = new Set(selectedItems);
+    
+    items.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "check-btn" + (set.has(item) ? " checked" : "");
+      div.textContent = item;
+      div.onclick = () => {
+        div.classList.toggle("checked");
+      };
+      container.appendChild(div);
+    });
+  }
+
+  function getCheckedValues(containerId) {
+    const container = document.getElementById(containerId);
+    const checkedDivs = container.querySelectorAll(".check-btn.checked");
+    return Array.from(checkedDivs).map(d => d.textContent);
+  }
+
+  // --- EVENTOS GLOBALES ---
+  document.getElementById("btnNew").addEventListener("click", () => startEditor(null));
+  
+  scoreInput.addEventListener("input", (e) => {
+    scoreDisplay.textContent = Number(e.target.value).toFixed(1);
+  });
+
+  // Exportar/Importar
+  document.getElementById("btnExport").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(entries,null,2)], {type : 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `journal_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+  });
+
+  document.getElementById("importFile").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const text = await file.text();
+    try {
+      const imported = JSON.parse(text);
+      if(Array.isArray(imported)) {
+        if(confirm(`Se importarán ${imported.length} entradas. ¿Sobrescribir datos actuales?`)) {
+          entries = imported;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+          renderHome();
+        }
+      }
+    } catch(err) { alert("Error al importar JSON"); }
+  });
+
+})();
+</script>
+</body>
+</html>
