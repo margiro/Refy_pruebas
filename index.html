@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 
   <style>
     /* --- NUEVA PALETA ESTILO REFLECTLY --- */
@@ -161,11 +162,145 @@
       transform: translateY(-2px);
     }
 
+    /* --- NAVIGATION TABS --- */
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      background: var(--card-glass);
+      padding: 6px;
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+    }
+    .nav-tab {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 14px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all .3s;
+    }
+    .nav-tab.active {
+      background: var(--accent-coral-grad);
+      color: white;
+      box-shadow: var(--shadow-glow);
+    }
+
+    /* --- ANALYTICS VIEW --- */
+    .time-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .time-btn {
+      padding: 10px 16px;
+      border: none;
+      background: var(--card-glass);
+      color: var(--muted);
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .3s;
+    }
+    .time-btn.active {
+      background: var(--accent-blue-grad);
+      color: white;
+      box-shadow: 0 5px 15px rgba(86, 204, 242, 0.4);
+    }
+    .custom-dates {
+      display: none;
+      gap: 10px;
+      margin-top: 10px;
+      align-items: center;
+    }
+    .custom-dates.active {
+      display: flex;
+    }
+    .custom-dates input {
+      flex: 1;
+      min-width: 0;
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+    .custom-dates button {
+      padding: 10px 20px;
+      white-space: nowrap;
+    }
+
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card-glass);
+      backdrop-filter: blur(10px);
+      padding: 16px;
+      border-radius: 20px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent-coral);
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .chart-container {
+      background: var(--card-glass);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-soft);
+    }
+    .chart-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--txt);
+    }
+    .chart-wrapper {
+      position: relative;
+      height: 300px;
+    }
+    .empty-chart {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
   </style>
 </head>
 <body>
 
   <div class="wrap">
+    
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tabJournal">📝 Diario</button>
+      <button class="nav-tab" id="tabAnalytics">📊 Análisis</button>
+    </div>
     
     <div id="viewList" class="view-section active">
       <header>
@@ -230,6 +365,82 @@
         <div class="nav-bar">
           <button class="btn" onclick="goToStep(3)">Atrás</button>
           <button class="btn primary" id="btnFinish">Guardar Entrada ✓</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ANALYTICS VIEW -->
+    <div id="viewAnalytics" class="view-section">
+      <header>
+        <h1>Análisis</h1>
+        <div class="sub">Visualiza tus patrones y tendencias</div>
+      </header>
+
+      <!-- Time Range Selector -->
+      <div class="time-selector">
+        <button class="time-btn active" data-range="month">Este mes</button>
+        <button class="time-btn" data-range="6months">Últimos 6 meses</button>
+        <button class="time-btn" data-range="year">Este año</button>
+        <button class="time-btn" data-range="custom">Personalizado</button>
+      </div>
+
+      <div class="custom-dates" id="customDates">
+        <input type="date" id="customStart" />
+        <span style="color: var(--muted);">→</span>
+        <input type="date" id="customEnd" />
+        <button class="btn primary" id="btnApplyCustom">Aplicar</button>
+      </div>
+
+      <!-- Summary Stats -->
+      <div class="stats-cards" id="statsCards">
+        <div class="stat-card">
+          <div class="stat-value" id="statEntries">0</div>
+          <div class="stat-label">Entradas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statAvgMood">0.0</div>
+          <div class="stat-label">Ánimo promedio</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statBestDay">-</div>
+          <div class="stat-label">Mejor día</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statVariance">0.00000</div>
+          <div class="stat-label">Varianza ánimo</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statAvgActivities">0.00000</div>
+          <div class="stat-label">Actividades/día</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statAvgEmotions">0.00000</div>
+          <div class="stat-label">Emociones/día</div>
+        </div>
+      </div>
+
+      <!-- Chart 1: Mood Timeline -->
+      <div class="chart-container">
+        <div class="chart-title">📈 Evolución del ánimo</div>
+        <div class="chart-wrapper">
+          <canvas id="chartMood"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 2: Activity Frequency -->
+      <div class="chart-container">
+        <div class="chart-title">🎯 Frecuencia de actividades</div>
+        <div class="chart-wrapper">
+          <canvas id="chartActivities"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 3: Emotion Distribution -->
+      <div class="chart-container">
+        <div class="chart-title">😊 Distribución de emociones</div>
+        <div class="chart-wrapper">
+          <canvas id="chartEmotions"></canvas>
         </div>
       </div>
 
@@ -442,6 +653,403 @@
       }
     } catch(err) { alert("Error al importar JSON"); }
   });
+
+  // --- ANALYTICS VIEW ---
+  const viewAnalytics = document.getElementById("viewAnalytics");
+  const tabJournal = document.getElementById("tabJournal");
+  const tabAnalytics = document.getElementById("tabAnalytics");
+  
+  let currentRange = 'month';
+  let customStartDate = null;
+  let customEndDate = null;
+  
+  let moodChart = null;
+  let activitiesChart = null;
+  let emotionsChart = null;
+
+  // Tab Navigation
+  tabJournal.addEventListener("click", () => {
+    tabJournal.classList.add("active");
+    tabAnalytics.classList.remove("active");
+    viewAnalytics.classList.remove("active");
+    viewList.classList.add("active");
+    viewEditor.classList.remove("active");
+  });
+
+  tabAnalytics.addEventListener("click", () => {
+    tabAnalytics.classList.add("active");
+    tabJournal.classList.remove("active");
+    viewList.classList.remove("active");
+    viewEditor.classList.remove("active");
+    viewAnalytics.classList.add("active");
+    renderAnalytics();
+  });
+
+  // Time Range Selection
+  document.querySelectorAll('.time-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentRange = btn.dataset.range;
+      
+      const customDates = document.getElementById('customDates');
+      if (currentRange === 'custom') {
+        customDates.classList.add('active');
+      } else {
+        customDates.classList.remove('active');
+        renderAnalytics();
+      }
+    });
+  });
+
+  document.getElementById('btnApplyCustom').addEventListener('click', () => {
+    const start = document.getElementById('customStart').value;
+    const end = document.getElementById('customEnd').value;
+    if (start && end) {
+      customStartDate = start;
+      customEndDate = end;
+      renderAnalytics();
+    }
+  });
+
+  // Get filtered entries based on time range
+  function getFilteredEntries() {
+    const now = new Date();
+    let startDate;
+    
+    if (currentRange === 'custom' && customStartDate && customEndDate) {
+      return entries.filter(e => e.date >= customStartDate && e.date <= customEndDate);
+    }
+    
+    switch(currentRange) {
+      case 'month':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+      case '6months':
+        startDate = new Date(now);
+        startDate.setMonth(now.getMonth() - 6);
+        break;
+      case 'year':
+        startDate = new Date(now.getFullYear(), 0, 1);
+        break;
+      default:
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+    
+    const startStr = startDate.toISOString().slice(0, 10);
+    return entries.filter(e => e.date >= startStr);
+  }
+
+  function renderAnalytics() {
+    const filtered = getFilteredEntries();
+    
+    // Update stats
+    document.getElementById('statEntries').textContent = filtered.length;
+    
+    if (filtered.length > 0) {
+      const avgMood = filtered.reduce((sum, e) => sum + (e.score || 0), 0) / filtered.length;
+      document.getElementById('statAvgMood').textContent = avgMood.toFixed(5);
+      
+      const bestEntry = filtered.reduce((best, e) => (e.score > best.score ? e : best), filtered[0]);
+      document.getElementById('statBestDay').textContent = bestEntry.date.slice(5);
+      
+      // Calcular varianza
+      const variance = filtered.reduce((sum, e) => {
+        const diff = (e.score || 0) - avgMood;
+        return sum + (diff * diff);
+      }, 0) / filtered.length;
+      document.getElementById('statVariance').textContent = variance.toFixed(5);
+      
+      // Promedio de actividades por día
+      const totalActivities = filtered.reduce((sum, e) => sum + (e.activities || []).length, 0);
+      const avgActivities = totalActivities / filtered.length;
+      document.getElementById('statAvgActivities').textContent = avgActivities.toFixed(5);
+      
+      // Promedio de emociones por día
+      const totalEmotions = filtered.reduce((sum, e) => sum + (e.emotions || []).length, 0);
+      const avgEmotions = totalEmotions / filtered.length;
+      document.getElementById('statAvgEmotions').textContent = avgEmotions.toFixed(5);
+      
+    } else {
+      document.getElementById('statAvgMood').textContent = '0.00000';
+      document.getElementById('statBestDay').textContent = '-';
+      document.getElementById('statVariance').textContent = '0.00000';
+      document.getElementById('statAvgActivities').textContent = '0.00000';
+      document.getElementById('statAvgEmotions').textContent = '0.00000';
+    }
+    
+    // Render charts
+    renderMoodChart(filtered);
+    renderActivitiesChart(filtered);
+    renderEmotionsChart(filtered);
+  }
+
+  function renderMoodChart(filtered) {
+    const wrapper = document.getElementById('chartMood').parentElement;
+    
+    if (moodChart) {
+      moodChart.destroy();
+      moodChart = null;
+    }
+    
+    if (filtered.length === 0) {
+      wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>';
+      return;
+    }
+    
+    // Recreate canvas
+    wrapper.innerHTML = '<canvas id="chartMood"></canvas>';
+    
+    const sorted = [...filtered].sort((a, b) => a.date.localeCompare(b.date));
+    const labels = sorted.map(e => e.date);
+    const data = sorted.map(e => e.score || 0);
+    
+    moodChart = new Chart(document.getElementById('chartMood'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Ánimo',
+          data: data,
+          borderColor: '#FF8E7B',
+          backgroundColor: 'rgba(255, 142, 123, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 5,
+          pointBackgroundColor: '#FF8E7B',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointHoverRadius: 7
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const entry = sorted[index];
+            startEditor(entry.date);
+            tabJournal.click();
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: { size: 14, weight: 'bold' },
+            bodyFont: { size: 13 },
+            callbacks: {
+              label: (context) => {
+                const entry = sorted[context.dataIndex];
+                return [
+                  `Ánimo: ${context.parsed.y.toFixed(1)}`,
+                  entry.title ? `"${entry.title}"` : ''
+                ].filter(Boolean);
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+              color: '#AAB2D6',
+              font: { weight: '600' }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#AAB2D6',
+              font: { weight: '600' },
+              maxRotation: 45,
+              minRotation: 45
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function renderActivitiesChart(filtered) {
+    const wrapper = document.getElementById('chartActivities').parentElement;
+    
+    if (activitiesChart) {
+      activitiesChart.destroy();
+      activitiesChart = null;
+    }
+    
+    if (filtered.length === 0) {
+      wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>';
+      return;
+    }
+    
+    // Recreate canvas
+    wrapper.innerHTML = '<canvas id="chartActivities"></canvas>';
+    
+    const activityCounts = {};
+    ACTIVITIES.forEach(a => activityCounts[a] = 0);
+    
+    filtered.forEach(e => {
+      (e.activities || []).forEach(a => {
+        if (activityCounts[a] !== undefined) activityCounts[a]++;
+      });
+    });
+    
+    const labels = Object.keys(activityCounts);
+    const data = Object.values(activityCounts);
+    
+    activitiesChart = new Chart(document.getElementById('chartActivities'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Frecuencia',
+          data: data,
+          backgroundColor: 'rgba(86, 204, 242, 0.8)',
+          borderColor: '#56CCF2',
+          borderWidth: 2,
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: { size: 14, weight: 'bold' },
+            bodyFont: { size: 13 }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+              color: '#AAB2D6',
+              font: { weight: '600' },
+              stepSize: 1
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#AAB2D6',
+              font: { weight: '600' },
+              maxRotation: 45,
+              minRotation: 45
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function renderEmotionsChart(filtered) {
+    const wrapper = document.getElementById('chartEmotions').parentElement;
+    
+    if (emotionsChart) {
+      emotionsChart.destroy();
+      emotionsChart = null;
+    }
+    
+    if (filtered.length === 0) {
+      wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>';
+      return;
+    }
+    
+    // Recreate canvas
+    wrapper.innerHTML = '<canvas id="chartEmotions"></canvas>';
+    
+    const emotionCounts = {};
+    EMOTIONS.forEach(e => emotionCounts[e] = 0);
+    
+    filtered.forEach(e => {
+      (e.emotions || []).forEach(em => {
+        if (emotionCounts[em] !== undefined) emotionCounts[em]++;
+      });
+    });
+    
+    const labels = Object.keys(emotionCounts);
+    const data = Object.values(emotionCounts);
+    
+    emotionsChart = new Chart(document.getElementById('chartEmotions'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Frecuencia',
+          data: data,
+          backgroundColor: 'rgba(255, 142, 123, 0.8)',
+          borderColor: '#FF8E7B',
+          borderWidth: 2,
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: { size: 14, weight: 'bold' },
+            bodyFont: { size: 13 }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+              color: '#AAB2D6',
+              font: { weight: '600' },
+              stepSize: 1
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#AAB2D6',
+              font: { weight: '600' },
+              maxRotation: 45,
+              minRotation: 45
+            }
+          }
+        }
+      }
+    });
+  }
 
 })();
 </script>
