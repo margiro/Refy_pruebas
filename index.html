@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Mi Diario</title>
   <link rel="apple-touch-icon" href="icono.png">
-
   <link rel="icon" type="image/png" href="icono.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,60 +12,48 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 
   <style>
-    /* --- NUEVA PALETA ESTILO REFLECTLY --- */
     :root {
-      /* Fondos y bases */
-      --bg-main: #8182DE; /* Azul oscuro profundo base */
-      --bg-grad: linear-gradient(135deg, #8182DE 0%, #5556e6 100%); /* Degradado de fondo */
-      --card-glass: rgba(0, 0, 0, 0.15); /* Efecto cristal para tarjetas */
-      --input-bg: rgba(0, 0, 0, 0.2); /* Fondo inputs */
-      
-      /* Textos */
+      --bg-main: #8182DE;
+      --bg-grad: linear-gradient(135deg, #8182DE 0%, #5556e6 100%);
+      --card-glass: rgba(0, 0, 0, 0.15);
+      --input-bg: rgba(0, 0, 0, 0.2);
       --txt: #FFFFFF;
       --muted: #AAB2D6;
-
-      /* Acentos (Coral vibrante y Azul brillante) */
       --accent-coral: #FF8E7B;
       --accent-coral-grad: linear-gradient(to right, #FF8E7B, #FF6B6B);
       --accent-blue-grad: linear-gradient(to right, #56CCF2, #2F80ED);
       --danger: #FF6B6B;
-      
-      /* Sombras suaves */
       --shadow-soft: 0 10px 30px -5px rgba(0,0,0,0.3);
-      --shadow-glow: 0 5px 15px rgba(255, 142, 123, 0.4); /* Glow color coral */
-
-      font-family: 'Poppins', sans-serif; /* Fuente principal */
+      --shadow-glow: 0 5px 15px rgba(255, 142, 123, 0.4);
+      font-family: 'Poppins', sans-serif;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
-      margin: 0; 
+      margin: 0;
       background: var(--bg-grad);
       color: var(--txt);
       height: 100dvh; display: flex; flex-direction: column;
       font-family: var(--font-family);
-      overflow: hidden; /* Evitar scroll doble en iOS */
+      overflow: hidden;
     }
     .wrap {
       max-width: 600px; margin: 0 auto; padding: 24px; width: 100%; flex: 1;
-      display: flex; flex-direction: column; overflow-y: auto; /* Scroll dentro del wrap */
+      display: flex; flex-direction: column; overflow-y: auto;
     }
-    
-    /* --- ANIMACIONES Y VISTAS --- */
+
     .view-section { display: none; flex-direction: column; flex: 1; animation: slideUp .4s cubic-bezier(0.25, 0.8, 0.25, 1); }
     .view-section.active { display: flex; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-    /* --- UI COMÚN --- */
     h1 { margin: 0 0 8px 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
     h2 { font-size: 22px; color: var(--txt); margin-bottom: 24px; font-weight: 700; text-align: center; }
     .sub { color: var(--muted); font-size: 15px; margin-bottom: 24px; font-weight: 600; }
 
-    /* Inputs y Textareas más suaves y redondeados */
     input, textarea {
       width: 100%; background: var(--input-bg); color: var(--txt);
-      border: none; /* Sin bordes duros */
-      border-radius: 20px; /* Muy redondeado */
+      border: none;
+      border-radius: 20px;
       padding: 16px 20px;
       outline: none; font-size: 16px; font-family: inherit;
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
@@ -76,10 +63,9 @@
     textarea { min-height: 250px; resize: none; line-height: 1.6; }
     label { font-weight: 600; margin-left: 10px; }
 
-    /* Botones con degradados y sombras */
     .btn {
       border: none; background: var(--card-glass); color: var(--txt);
-      padding: 16px 24px; border-radius: 50px; /* Forma de píldora */
+      padding: 16px 24px; border-radius: 50px;
       cursor: pointer; font-weight: 700; font-size: 15px;
       display: inline-flex; align-items: center; justify-content: center; gap: 10px;
       transition: transform .2s, box-shadow .2s;
@@ -92,8 +78,7 @@
       box-shadow: var(--shadow-soft), var(--shadow-glow);
     }
     .btn.danger { color: var(--danger); background: rgba(255, 107, 107, 0.15); }
-    
-    /* --- VISTA DE LISTA --- */
+
     .fab {
       position: fixed; bottom: 30px; right: 30px;
       background: var(--accent-coral-grad); color: white;
@@ -106,7 +91,6 @@
     .fab:active { transform: scale(0.9); }
 
     .list-container { display: flex; flex-direction: column; gap: 14px; padding-bottom: 100px; }
-    /* Tarjetas estilo "Cristal" */
     .entry-card {
       background: var(--card-glass);
       backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -120,16 +104,14 @@
     .entry-preview { color: var(--muted); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; }
     .entry-meta { display: flex; justify-content: space-between; margin-top: 12px; font-size: 13px; color: var(--muted); font-weight: 600; }
 
-    /* --- EDITOR STEPS --- */
     .step { display: none; flex-direction: column; flex: 1; }
     .step.active { display: flex; }
-    
+
     .nav-bar {
       margin-top: auto; padding-top: 30px;
       display: flex; justify-content: space-between; gap: 15px;
     }
 
-    /* SLIDER ESTILO REFLECTLY */
     input[type=range] {
       -webkit-appearance: none; width: 100%; background: transparent; border: none; padding: 0; box-shadow: none;
     }
@@ -145,24 +127,22 @@
     }
     .big-score { font-size: 80px; font-weight: 800; text-align: center; color: var(--accent-coral); margin: 20px 0 40px 0; text-shadow: 0 5px 15px rgba(255, 142, 123, 0.3); }
 
-    /* CHECKLIST BURBUJAS */
     .checkgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; }
     .check-btn {
       background: var(--card-glass);
       color: var(--muted);
       font-weight: 600;
-      padding: 16px; border-radius: 50px; /* Burbujas */
+      padding: 16px; border-radius: 50px;
       text-align: center; font-size: 14px; cursor: pointer; user-select: none;
       transition: all .3s ease; box-shadow: var(--shadow-soft);
     }
     .check-btn.checked {
-      background: var(--accent-blue-grad); /* Degradado azul al activar */
+      background: var(--accent-blue-grad);
       color: white;
-      box-shadow: 0 5px 15px rgba(86, 204, 242, 0.4); /* Glow azul */
+      box-shadow: 0 5px 15px rgba(86, 204, 242, 0.4);
       transform: translateY(-2px);
     }
 
-    /* --- NAVIGATION TABS --- */
     .nav-tabs {
       display: flex;
       gap: 10px;
@@ -190,7 +170,6 @@
       box-shadow: var(--shadow-glow);
     }
 
-    /* --- ANALYTICS VIEW --- */
     .time-selector {
       display: flex;
       flex-wrap: wrap;
@@ -289,30 +268,27 @@
       font-size: 14px;
       font-weight: 600;
     }
-
   </style>
 </head>
 <body>
 
   <div class="wrap">
-    
-    <!-- Navigation Tabs -->
+
     <div class="nav-tabs">
       <button class="nav-tab active" id="tabJournal">📝 Diario</button>
       <button class="nav-tab" id="tabAnalytics">📊 Análisis</button>
     </div>
-    
+
     <div id="viewList" class="view-section active">
       <header>
         <h1>Mi Diario</h1>
         <div class="sub" id="statsLine">Cargando...</div>
       </header>
-      
-      <div class="list-container" id="entriesList">
-        </div>
+
+      <div class="list-container" id="entriesList"></div>
 
       <button class="fab" id="btnNew">+</button>
-      
+
       <div style="margin-top: auto; padding-top:20px; text-align:center; display:flex; justify-content:center; gap:10px; flex-wrap:wrap; opacity: 0.7;">
         <button class="btn" id="btnExportCSV" style="font-size:12px; padding:10px 16px;">📊 Exportar CSV</button>
         <button class="btn" id="btnExport" style="font-size:12px; padding:10px 16px;">⚙️ JSON</button>
@@ -322,15 +298,13 @@
     </div>
 
     <div id="viewEditor" class="view-section">
-      
+
       <div id="step1" class="step active">
         <h2>¿Qué tal el día?</h2>
         <label style="font-size:12px; color:var(--muted); margin-bottom:5px; display:block;">Fecha</label>
         <input type="date" id="dateInput" style="margin-bottom:20px;">
-        
         <input type="text" id="titleInput" placeholder="Un título breve..." style="margin-bottom:20px; font-weight:bold; font-size: 18px;">
         <textarea id="textInput" placeholder="Escribe aquí todo lo que ha pasado..."></textarea>
-        
         <div class="nav-bar">
           <button class="btn danger" id="btnDeleteEntry">Borrar</button>
           <button class="btn primary" onclick="goToStep(2)">Siguiente</button>
@@ -380,8 +354,10 @@
       <!-- Time Range Selector -->
       <div class="time-selector">
         <button class="time-btn active" data-range="month">Este mes</button>
+        <button class="time-btn" data-range="prevmonth">Mes anterior</button>
         <button class="time-btn" data-range="6months">Últimos 6 meses</button>
         <button class="time-btn" data-range="year">Este año</button>
+        <button class="time-btn" data-range="all">Todo</button>
         <button class="time-btn" data-range="custom">Personalizado</button>
       </div>
 
@@ -448,35 +424,39 @@
   </div>
 
 <script>
-// --- EL JAVASCRIPT NO HA CAMBIADO (Mantiene toda la funcionalidad anterior) ---
 (() => {
   const STORAGE_KEY = "journal:v1";
-  
-  // Datos maestros (EN INGLÉS ORIGINAL)
+
   const ACTIVITIES = ["Family","School/work","Relationship","Friends/colleagues","Health","Hobbies","Sleep","Relaxing","Exercise"];
   const EMOTIONS = ["Happy","Good","Confused/thoughtful","Bored/tired/neutral","Awkward","Stressed","Angry/ pissed","Anxious","Down"];
 
-  // Estado
   let entries = [];
-  let currentEntry = {}; 
-  let isEditing = false; 
+  let currentEntry = {};
+  let isEditing = false;
 
-  // DOM Elements
   const viewList = document.getElementById("viewList");
   const viewEditor = document.getElementById("viewEditor");
   const entriesListEl = document.getElementById("entriesList");
   const statsLine = document.getElementById("statsLine");
-  
-  // Inputs
+
   const dateInput = document.getElementById("dateInput");
   const titleInput = document.getElementById("titleInput");
   const textInput = document.getElementById("textInput");
   const scoreInput = document.getElementById("scoreInput");
   const scoreDisplay = document.getElementById("scoreDisplay");
-  
-  // Init
+
   loadData();
   renderHome();
+
+  // -------------------------------------------------------
+  // HELPER: fecha local como string YYYY-MM-DD sin desfase UTC
+  // -------------------------------------------------------
+  function localDateStr(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
 
   // --- NAVEGACIÓN ---
   window.goToStep = (stepNum) => {
@@ -501,7 +481,7 @@
       if(!currentEntry) currentEntry = createEmptyEntry(dateToEdit);
     } else {
       isEditing = false;
-      const today = new Date().toISOString().slice(0,10);
+      const today = localDateStr(new Date());
       const existing = entries.find(e => e.date === today);
       if (existing) {
         currentEntry = existing;
@@ -516,7 +496,7 @@
     textInput.value = currentEntry.text || "";
     scoreInput.value = currentEntry.score || 5;
     scoreDisplay.textContent = Number(scoreInput.value).toFixed(1);
-    
+
     renderCheckGrid("gridActivities", ACTIVITIES, currentEntry.activities || []);
     renderCheckGrid("gridEmotions", EMOTIONS, currentEntry.emotions || []);
   }
@@ -525,7 +505,6 @@
     return { date, title:"", text:"", score: 5.0, activities:[], emotions:[] };
   }
 
-  // --- LOGICA DE GUARDADO ---
   function saveCurrentState() {
     currentEntry.date = dateInput.value;
     currentEntry.title = titleInput.value;
@@ -537,7 +516,7 @@
     const idx = entries.findIndex(e => e.date === currentEntry.date);
     if (idx >= 0) entries[idx] = currentEntry;
     else entries.push(currentEntry);
-    
+
     entries.sort((a,b) => b.date.localeCompare(a.date));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   }
@@ -554,7 +533,6 @@
     showHome();
   });
 
-  // --- UI RENDER ---
   function loadData() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -604,7 +582,6 @@
     return Array.from(container.querySelectorAll(".check-btn.checked")).map(d => d.textContent);
   }
 
-  // --- HELPERS PARA CSV ---
   function escapeCSV(value) {
     if (value == null) return "";
     const str = String(value);
@@ -639,10 +616,9 @@
     return lines.join("\n");
   }
 
-  // --- EVENTOS GLOBALES ---
   document.getElementById("btnNew").addEventListener("click", () => startEditor(null));
   scoreInput.addEventListener("input", (e) => { scoreDisplay.textContent = Number(e.target.value).toFixed(1); });
-  document.getElementById("btnExport").addEventListener("click", () => { downloadText(`journal_backup_${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(entries,null,2), "application/json"); });
+  document.getElementById("btnExport").addEventListener("click", () => { downloadText(`journal_backup_${localDateStr(new Date())}.json`, JSON.stringify(entries,null,2), "application/json"); });
   document.getElementById("btnExportCSV").addEventListener("click", () => { const csv = generateCSV(); downloadText("journal_export.csv", csv, "text/csv;charset=utf-8;"); });
   document.getElementById("importFile").addEventListener("change", async (e) => {
     const file = e.target.files[0]; if(!file) return;
@@ -654,20 +630,19 @@
     } catch(err) { alert("Error al importar JSON"); }
   });
 
-  // --- ANALYTICS VIEW ---
+  // --- ANALYTICS ---
   const viewAnalytics = document.getElementById("viewAnalytics");
   const tabJournal = document.getElementById("tabJournal");
   const tabAnalytics = document.getElementById("tabAnalytics");
-  
+
   let currentRange = 'month';
   let customStartDate = null;
   let customEndDate = null;
-  
+
   let moodChart = null;
   let activitiesChart = null;
   let emotionsChart = null;
 
-  // Tab Navigation
   tabJournal.addEventListener("click", () => {
     tabJournal.classList.add("active");
     tabAnalytics.classList.remove("active");
@@ -685,13 +660,12 @@
     renderAnalytics();
   });
 
-  // Time Range Selection
   document.querySelectorAll('.time-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentRange = btn.dataset.range;
-      
+
       const customDates = document.getElementById('customDates');
       if (currentRange === 'custom') {
         customDates.classList.add('active');
@@ -712,64 +686,84 @@
     }
   });
 
-  // Get filtered entries based on time range
+  // -------------------------------------------------------
+  // FIX: getFilteredEntries usa localDateStr en vez de toISOString
+  // para evitar el desfase UTC que hacía pillar el día 31 del mes anterior
+  // -------------------------------------------------------
   function getFilteredEntries() {
     const now = new Date();
-    let startDate;
-    
+
     if (currentRange === 'custom' && customStartDate && customEndDate) {
       return entries.filter(e => e.date >= customStartDate && e.date <= customEndDate);
     }
-    
-    switch(currentRange) {
-      case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
-      case '6months':
-        startDate = new Date(now);
-        startDate.setMonth(now.getMonth() - 6);
-        break;
-      case 'year':
-        startDate = new Date(now.getFullYear(), 0, 1);
-        break;
-      default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Opción "Todo": devuelve todas las entradas sin filtro
+    if (currentRange === 'all') {
+      return [...entries];
     }
-    
-    const startStr = startDate.toISOString().slice(0, 10);
+
+    let startStr, endStr;
+
+    switch(currentRange) {
+      case 'month': {
+        // Primer día del mes actual (sin desfase UTC)
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        startStr = localDateStr(start);
+        break;
+      }
+      case 'prevmonth': {
+        // Primer y último día del mes anterior
+        const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const end = new Date(now.getFullYear(), now.getMonth(), 0); // día 0 = último del mes anterior
+        startStr = localDateStr(start);
+        endStr = localDateStr(end);
+        break;
+      }
+      case '6months': {
+        const start = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+        startStr = localDateStr(start);
+        break;
+      }
+      case 'year': {
+        const start = new Date(now.getFullYear(), 0, 1);
+        startStr = localDateStr(start);
+        break;
+      }
+      default: {
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        startStr = localDateStr(start);
+      }
+    }
+
+    if (endStr) {
+      return entries.filter(e => e.date >= startStr && e.date <= endStr);
+    }
     return entries.filter(e => e.date >= startStr);
   }
 
   function renderAnalytics() {
     const filtered = getFilteredEntries();
-    
-    // Update stats
+
     document.getElementById('statEntries').textContent = filtered.length;
-    
+
     if (filtered.length > 0) {
       const avgMood = filtered.reduce((sum, e) => sum + (e.score || 0), 0) / filtered.length;
       document.getElementById('statAvgMood').textContent = avgMood.toFixed(5);
-      
+
       const bestEntry = filtered.reduce((best, e) => (e.score > best.score ? e : best), filtered[0]);
       document.getElementById('statBestDay').textContent = bestEntry.date.slice(5);
-      
-      // Calcular varianza
+
       const variance = filtered.reduce((sum, e) => {
         const diff = (e.score || 0) - avgMood;
         return sum + (diff * diff);
       }, 0) / filtered.length;
       document.getElementById('statVariance').textContent = variance.toFixed(5);
-      
-      // Promedio de actividades por día
+
       const totalActivities = filtered.reduce((sum, e) => sum + (e.activities || []).length, 0);
-      const avgActivities = totalActivities / filtered.length;
-      document.getElementById('statAvgActivities').textContent = avgActivities.toFixed(5);
-      
-      // Promedio de emociones por día
+      document.getElementById('statAvgActivities').textContent = (totalActivities / filtered.length).toFixed(5);
+
       const totalEmotions = filtered.reduce((sum, e) => sum + (e.emotions || []).length, 0);
-      const avgEmotions = totalEmotions / filtered.length;
-      document.getElementById('statAvgEmotions').textContent = avgEmotions.toFixed(5);
-      
+      document.getElementById('statAvgEmotions').textContent = (totalEmotions / filtered.length).toFixed(5);
     } else {
       document.getElementById('statAvgMood').textContent = '0.00000';
       document.getElementById('statBestDay').textContent = '-';
@@ -777,8 +771,7 @@
       document.getElementById('statAvgActivities').textContent = '0.00000';
       document.getElementById('statAvgEmotions').textContent = '0.00000';
     }
-    
-    // Render charts
+
     renderMoodChart(filtered);
     renderActivitiesChart(filtered);
     renderEmotionsChart(filtered);
@@ -786,100 +779,49 @@
 
   function renderMoodChart(filtered) {
     const wrapper = document.getElementById('chartMood').parentElement;
-    
-    if (moodChart) {
-      moodChart.destroy();
-      moodChart = null;
-    }
-    
-    if (filtered.length === 0) {
-      wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>';
-      return;
-    }
-    
-    // Recreate canvas
+    if (moodChart) { moodChart.destroy(); moodChart = null; }
+    if (filtered.length === 0) { wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>'; return; }
     wrapper.innerHTML = '<canvas id="chartMood"></canvas>';
-    
     const sorted = [...filtered].sort((a, b) => a.date.localeCompare(b.date));
-    const labels = sorted.map(e => e.date);
-    const data = sorted.map(e => e.score || 0);
-    
     moodChart = new Chart(document.getElementById('chartMood'), {
       type: 'line',
       data: {
-        labels: labels,
+        labels: sorted.map(e => e.date),
         datasets: [{
           label: 'Ánimo',
-          data: data,
+          data: sorted.map(e => e.score || 0),
           borderColor: '#FF8E7B',
           backgroundColor: 'rgba(255, 142, 123, 0.1)',
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4,
-          pointRadius: 5,
-          pointBackgroundColor: '#FF8E7B',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointHoverRadius: 7
+          borderWidth: 3, fill: true, tension: 0.4,
+          pointRadius: 5, pointBackgroundColor: '#FF8E7B',
+          pointBorderColor: '#fff', pointBorderWidth: 2, pointHoverRadius: 7
         }]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
         onClick: (event, elements) => {
           if (elements.length > 0) {
-            const index = elements[0].index;
-            const entry = sorted[index];
-            startEditor(entry.date);
+            startEditor(sorted[elements[0].index].date);
             tabJournal.click();
           }
         },
         plugins: {
-          legend: {
-            display: false
-          },
+          legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            padding: 12,
-            titleFont: { size: 14, weight: 'bold' },
-            bodyFont: { size: 13 },
+            backgroundColor: 'rgba(0,0,0,0.8)', padding: 12,
+            titleFont: { size: 14, weight: 'bold' }, bodyFont: { size: 13 },
             callbacks: {
               label: (context) => {
                 const entry = sorted[context.dataIndex];
-                return [
-                  `Ánimo: ${context.parsed.y.toFixed(1)}`,
-                  entry.title ? `"${entry.title}"` : ''
-                ].filter(Boolean);
+                return [`Ánimo: ${context.parsed.y.toFixed(1)}`, entry.title ? `"${entry.title}"` : ''].filter(Boolean);
               }
             }
           }
         },
         scales: {
-          y: {
-            beginAtZero: false,
-            grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
-            },
-            ticks: {
-              color: '#AAB2D6',
-              font: { weight: '600' }
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              color: '#AAB2D6',
-              font: { weight: '600' },
-              maxRotation: 45,
-              minRotation: 45
-            }
-          }
+          y: { beginAtZero: false, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#AAB2D6', font: { weight: '600' } } },
+          x: { grid: { display: false }, ticks: { color: '#AAB2D6', font: { weight: '600' }, maxRotation: 45, minRotation: 45 } }
         }
       }
     });
@@ -887,82 +829,24 @@
 
   function renderActivitiesChart(filtered) {
     const wrapper = document.getElementById('chartActivities').parentElement;
-    
-    if (activitiesChart) {
-      activitiesChart.destroy();
-      activitiesChart = null;
-    }
-    
-    if (filtered.length === 0) {
-      wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>';
-      return;
-    }
-    
-    // Recreate canvas
+    if (activitiesChart) { activitiesChart.destroy(); activitiesChart = null; }
+    if (filtered.length === 0) { wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>'; return; }
     wrapper.innerHTML = '<canvas id="chartActivities"></canvas>';
-    
-    const activityCounts = {};
-    ACTIVITIES.forEach(a => activityCounts[a] = 0);
-    
-    filtered.forEach(e => {
-      (e.activities || []).forEach(a => {
-        if (activityCounts[a] !== undefined) activityCounts[a]++;
-      });
-    });
-    
-    const labels = Object.keys(activityCounts);
-    const data = Object.values(activityCounts);
-    
+    const counts = {};
+    ACTIVITIES.forEach(a => counts[a] = 0);
+    filtered.forEach(e => (e.activities || []).forEach(a => { if (counts[a] !== undefined) counts[a]++; }));
     activitiesChart = new Chart(document.getElementById('chartActivities'), {
       type: 'bar',
       data: {
-        labels: labels,
-        datasets: [{
-          label: 'Frecuencia',
-          data: data,
-          backgroundColor: 'rgba(86, 204, 242, 0.8)',
-          borderColor: '#56CCF2',
-          borderWidth: 2,
-          borderRadius: 8
-        }]
+        labels: Object.keys(counts),
+        datasets: [{ label: 'Frecuencia', data: Object.values(counts), backgroundColor: 'rgba(86,204,242,0.8)', borderColor: '#56CCF2', borderWidth: 2, borderRadius: 8 }]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            padding: 12,
-            titleFont: { size: 14, weight: 'bold' },
-            bodyFont: { size: 13 }
-          }
-        },
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, titleFont: { size: 14, weight: 'bold' }, bodyFont: { size: 13 } } },
         scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
-            },
-            ticks: {
-              color: '#AAB2D6',
-              font: { weight: '600' },
-              stepSize: 1
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              color: '#AAB2D6',
-              font: { weight: '600' },
-              maxRotation: 45,
-              minRotation: 45
-            }
-          }
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#AAB2D6', font: { weight: '600' }, stepSize: 1 } },
+          x: { grid: { display: false }, ticks: { color: '#AAB2D6', font: { weight: '600' }, maxRotation: 45, minRotation: 45 } }
         }
       }
     });
@@ -970,82 +854,24 @@
 
   function renderEmotionsChart(filtered) {
     const wrapper = document.getElementById('chartEmotions').parentElement;
-    
-    if (emotionsChart) {
-      emotionsChart.destroy();
-      emotionsChart = null;
-    }
-    
-    if (filtered.length === 0) {
-      wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>';
-      return;
-    }
-    
-    // Recreate canvas
+    if (emotionsChart) { emotionsChart.destroy(); emotionsChart = null; }
+    if (filtered.length === 0) { wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>'; return; }
     wrapper.innerHTML = '<canvas id="chartEmotions"></canvas>';
-    
-    const emotionCounts = {};
-    EMOTIONS.forEach(e => emotionCounts[e] = 0);
-    
-    filtered.forEach(e => {
-      (e.emotions || []).forEach(em => {
-        if (emotionCounts[em] !== undefined) emotionCounts[em]++;
-      });
-    });
-    
-    const labels = Object.keys(emotionCounts);
-    const data = Object.values(emotionCounts);
-    
+    const counts = {};
+    EMOTIONS.forEach(e => counts[e] = 0);
+    filtered.forEach(e => (e.emotions || []).forEach(em => { if (counts[em] !== undefined) counts[em]++; }));
     emotionsChart = new Chart(document.getElementById('chartEmotions'), {
       type: 'bar',
       data: {
-        labels: labels,
-        datasets: [{
-          label: 'Frecuencia',
-          data: data,
-          backgroundColor: 'rgba(255, 142, 123, 0.8)',
-          borderColor: '#FF8E7B',
-          borderWidth: 2,
-          borderRadius: 8
-        }]
+        labels: Object.keys(counts),
+        datasets: [{ label: 'Frecuencia', data: Object.values(counts), backgroundColor: 'rgba(255,142,123,0.8)', borderColor: '#FF8E7B', borderWidth: 2, borderRadius: 8 }]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            padding: 12,
-            titleFont: { size: 14, weight: 'bold' },
-            bodyFont: { size: 13 }
-          }
-        },
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, titleFont: { size: 14, weight: 'bold' }, bodyFont: { size: 13 } } },
         scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
-            },
-            ticks: {
-              color: '#AAB2D6',
-              font: { weight: '600' },
-              stepSize: 1
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              color: '#AAB2D6',
-              font: { weight: '600' },
-              maxRotation: 45,
-              minRotation: 45
-            }
-          }
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#AAB2D6', font: { weight: '600' }, stepSize: 1 } },
+          x: { grid: { display: false }, ticks: { color: '#AAB2D6', font: { weight: '600' }, maxRotation: 45, minRotation: 45 } }
         }
       }
     });
