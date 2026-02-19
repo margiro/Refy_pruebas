@@ -445,8 +445,13 @@
   const scoreInput = document.getElementById("scoreInput");
   const scoreDisplay = document.getElementById("scoreDisplay");
 
-  loadData();
-  renderHome();
+  try {
+    loadData();
+    renderHome();
+  } catch(e) {
+    console.error("Error al iniciar la app:", e);
+    showCrashBanner(e);
+  }
 
   // -------------------------------------------------------
   // HELPER: fecha local como string YYYY-MM-DD sin desfase UTC
@@ -536,9 +541,58 @@
   function loadData() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      entries = raw ? JSON.parse(raw) : [];
-    } catch(e) { entries = []; }
+      if (!raw) { entries = []; return; }
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) throw new Error("Datos corruptos: no es un array");
+      entries = parsed.filter(e => e && typeof e.date === 'string');
+    } catch(e) {
+      console.error("Error leyendo localStorage:", e);
+      entries = [];
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) localStorage.setItem(STORAGE_KEY + "_backup", raw);
+      } catch(_) {}
+    }
   }
+
+  function showCrashBanner(err) {
+    const wrap = document.querySelector('.wrap');
+    if (!wrap) return;
+    wrap.innerHTML = \`
+      <div style="padding:40px 24px; text-align:center; display:flex; flex-direction:column; gap:20px; align-items:center;">
+        <div style="font-size:48px;">⚠️</div>
+        <h2 style="margin:0;">Algo salió mal</h2>
+        <p style="color:var(--muted); font-size:14px; margin:0;">
+          Error al cargar la app:<br><code style="font-size:12px; word-break:break-all;">\${err?.message || err}</code>
+        </p>
+        <button class="btn primary" onclick="recoverData()">🔄 Intentar recuperar datos</button>
+        <button class="btn danger" onclick="clearAndReload()" style="font-size:13px;">🗑️ Limpiar y reiniciar</button>
+      </div>
+    \`;
+  }
+
+  window.recoverData = function() {
+    try {
+      const backup = localStorage.getItem(STORAGE_KEY + "_backup");
+      if (backup) {
+        const parsed = JSON.parse(backup);
+        if (Array.isArray(parsed)) {
+          localStorage.setItem(STORAGE_KEY, backup);
+          location.reload();
+          return;
+        }
+      }
+    } catch(_) {}
+    clearAndReload();
+  };
+
+  window.clearAndReload = function() {
+    if (confirm("¿Seguro? Se borrarán todos los datos locales.")) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY + "_backup");
+      location.reload();
+    }
+  };
 
   function renderHome() {
     entriesListEl.innerHTML = "";
