@@ -10,863 +10,539 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-
   <style>
     :root {
-      --bg-main: #8182DE;
       --bg-grad: linear-gradient(135deg, #8182DE 0%, #5556e6 100%);
-      --card-glass: rgba(0, 0, 0, 0.15);
-      --input-bg: rgba(0, 0, 0, 0.2);
+      --card-glass: rgba(0,0,0,0.15);
+      --input-bg: rgba(0,0,0,0.2);
       --txt: #FFFFFF;
       --muted: #AAB2D6;
       --accent-coral: #FF8E7B;
-      --accent-coral-grad: linear-gradient(to right, #FF8E7B, #FF6B6B);
-      --accent-blue-grad: linear-gradient(to right, #56CCF2, #2F80ED);
+      --accent-coral-grad: linear-gradient(to right,#FF8E7B,#FF6B6B);
+      --accent-blue-grad: linear-gradient(to right,#56CCF2,#2F80ED);
       --danger: #FF6B6B;
       --shadow-soft: 0 10px 30px -5px rgba(0,0,0,0.3);
-      --shadow-glow: 0 5px 15px rgba(255, 142, 123, 0.4);
+      --shadow-glow: 0 5px 15px rgba(255,142,123,0.4);
       font-family: 'Poppins', sans-serif;
     }
-
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      margin: 0;
-      background: var(--bg-grad);
-      color: var(--txt);
-      height: 100dvh; display: flex; flex-direction: column;
-      font-family: var(--font-family);
-      overflow: hidden;
-    }
-    .wrap {
-      max-width: 600px; margin: 0 auto; padding: 24px; width: 100%; flex: 1;
-      display: flex; flex-direction: column; overflow-y: auto;
-    }
-
-    .view-section { display: none; flex-direction: column; flex: 1; animation: slideUp .4s cubic-bezier(0.25, 0.8, 0.25, 1); }
-    .view-section.active { display: flex; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
-    h1 { margin: 0 0 8px 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
-    h2 { font-size: 22px; color: var(--txt); margin-bottom: 24px; font-weight: 700; text-align: center; }
-    .sub { color: var(--muted); font-size: 15px; margin-bottom: 24px; font-weight: 600; }
-
-    input, textarea {
-      width: 100%; background: var(--input-bg); color: var(--txt);
-      border: none;
-      border-radius: 20px;
-      padding: 16px 20px;
-      outline: none; font-size: 16px; font-family: inherit;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-      transition: background .3s;
-    }
-    input:focus, textarea:focus { background: rgba(0, 0, 0, 0.3); }
-    textarea { min-height: 250px; resize: none; line-height: 1.6; }
-    label { font-weight: 600; margin-left: 10px; }
-
-    .btn {
-      border: none; background: var(--card-glass); color: var(--txt);
-      padding: 16px 24px; border-radius: 50px;
-      cursor: pointer; font-weight: 700; font-size: 15px;
-      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-      transition: transform .2s, box-shadow .2s;
-      box-shadow: var(--shadow-soft);
-    }
-    .btn:active { transform: scale(0.97); }
-    .btn.primary {
-      background: var(--accent-coral-grad);
-      color: white;
-      box-shadow: var(--shadow-soft), var(--shadow-glow);
-    }
-    .btn.danger { color: var(--danger); background: rgba(255, 107, 107, 0.15); }
-
-    .fab {
-      position: fixed; bottom: 30px; right: 30px;
-      background: var(--accent-coral-grad); color: white;
-      width: 64px; height: 64px; border-radius: 32px;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: var(--shadow-soft), var(--shadow-glow);
-      font-size: 32px; cursor: pointer; border: none; z-index: 100;
-      transition: transform .2s;
-    }
-    .fab:active { transform: scale(0.9); }
-
-    .list-container { display: flex; flex-direction: column; gap: 14px; padding-bottom: 100px; }
-    .entry-card {
-      background: var(--card-glass);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.05);
-      box-shadow: var(--shadow-soft);
-      padding: 20px; border-radius: 24px; cursor: pointer;
-      transition: transform .1s;
-    }
-    .entry-card:active { transform: scale(0.98); }
-    .entry-date { font-weight: 800; font-size: 16px; margin-bottom: 6px; }
-    .entry-preview { color: var(--muted); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; }
-    .entry-meta { display: flex; justify-content: space-between; margin-top: 12px; font-size: 13px; color: var(--muted); font-weight: 600; }
-
-    .step { display: none; flex-direction: column; flex: 1; }
-    .step.active { display: flex; }
-
-    .nav-bar {
-      margin-top: auto; padding-top: 30px;
-      display: flex; justify-content: space-between; gap: 15px;
-    }
-
-    input[type=range] {
-      -webkit-appearance: none; width: 100%; background: transparent; border: none; padding: 0; box-shadow: none;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none; height: 40px; width: 40px; border-radius: 50%;
-      background: var(--accent-coral);
-      box-shadow: 0 0 0 6px rgba(255, 142, 123, 0.3), var(--shadow-glow);
-      margin-top: -16px; transition: transform .2s;
-    }
-    input[type=range]:active::-webkit-slider-thumb { transform: scale(1.1); }
-    input[type=range]::-webkit-slider-runnable-track {
-      width: 100%; height: 8px; background: rgba(0,0,0,0.2); border-radius: 4px;
-    }
-    .big-score { font-size: 80px; font-weight: 800; text-align: center; color: var(--accent-coral); margin: 20px 0 40px 0; text-shadow: 0 5px 15px rgba(255, 142, 123, 0.3); }
-
-    .checkgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; }
-    .check-btn {
-      background: var(--card-glass);
-      color: var(--muted);
-      font-weight: 600;
-      padding: 16px; border-radius: 50px;
-      text-align: center; font-size: 14px; cursor: pointer; user-select: none;
-      transition: all .3s ease; box-shadow: var(--shadow-soft);
-    }
-    .check-btn.checked {
-      background: var(--accent-blue-grad);
-      color: white;
-      box-shadow: 0 5px 15px rgba(86, 204, 242, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .nav-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 24px;
-      background: var(--card-glass);
-      padding: 6px;
-      border-radius: 50px;
-      backdrop-filter: blur(10px);
-    }
-    .nav-tab {
-      flex: 1;
-      padding: 12px 20px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      font-weight: 700;
-      font-size: 14px;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all .3s;
-    }
-    .nav-tab.active {
-      background: var(--accent-coral-grad);
-      color: white;
-      box-shadow: var(--shadow-glow);
-    }
-
-    .time-selector {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-    .time-btn {
-      padding: 10px 16px;
-      border: none;
-      background: var(--card-glass);
-      color: var(--muted);
-      border-radius: 50px;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all .3s;
-    }
-    .time-btn.active {
-      background: var(--accent-blue-grad);
-      color: white;
-      box-shadow: 0 5px 15px rgba(86, 204, 242, 0.4);
-    }
-    .custom-dates {
-      display: none;
-      gap: 10px;
-      margin-top: 10px;
-      align-items: center;
-    }
-    .custom-dates.active {
-      display: flex;
-    }
-    .custom-dates input {
-      flex: 1;
-      min-width: 0;
-      padding: 10px 14px;
-      font-size: 14px;
-    }
-    .custom-dates button {
-      padding: 10px 20px;
-      white-space: nowrap;
-    }
-
-    .stats-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-    .stat-card {
-      background: var(--card-glass);
-      backdrop-filter: blur(10px);
-      padding: 16px;
-      border-radius: 20px;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-    .stat-value {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--accent-coral);
-      margin-bottom: 4px;
-    }
-    .stat-label {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .chart-container {
-      background: var(--card-glass);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 24px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: var(--shadow-soft);
-    }
-    .chart-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      color: var(--txt);
-    }
-    .chart-wrapper {
-      position: relative;
-      height: 300px;
-    }
-    .empty-chart {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 600;
-    }
+    body { margin:0; background:var(--bg-grad); color:var(--txt); height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
+    .wrap { max-width:600px; margin:0 auto; padding:24px; width:100%; flex:1; display:flex; flex-direction:column; overflow-y:auto; }
+    .view-section { display:none; flex-direction:column; flex:1; animation:slideUp .4s cubic-bezier(.25,.8,.25,1); }
+    .view-section.active { display:flex; }
+    @keyframes slideUp { from { opacity:0; transform:translateY(30px) scale(.98); } to { opacity:1; transform:none; } }
+    h1 { margin:0 0 8px; font-size:28px; font-weight:800; letter-spacing:-.5px; }
+    h2 { font-size:22px; margin-bottom:24px; font-weight:700; text-align:center; }
+    .sub { color:var(--muted); font-size:15px; margin-bottom:24px; font-weight:600; }
+    input, textarea { width:100%; background:var(--input-bg); color:var(--txt); border:none; border-radius:20px; padding:16px 20px; outline:none; font-size:16px; font-family:inherit; box-shadow:inset 0 2px 4px rgba(0,0,0,.1); transition:background .3s; }
+    input:focus, textarea:focus { background:rgba(0,0,0,.3); }
+    textarea { min-height:250px; resize:none; line-height:1.6; }
+    .btn { border:none; background:var(--card-glass); color:var(--txt); padding:16px 24px; border-radius:50px; cursor:pointer; font-weight:700; font-size:15px; display:inline-flex; align-items:center; justify-content:center; gap:10px; transition:transform .2s,box-shadow .2s; box-shadow:var(--shadow-soft); }
+    .btn:active { transform:scale(.97); }
+    .btn.primary { background:var(--accent-coral-grad); color:#fff; box-shadow:var(--shadow-soft),var(--shadow-glow); }
+    .btn.danger { color:var(--danger); background:rgba(255,107,107,.15); }
+    .fab { position:fixed; bottom:30px; right:30px; background:var(--accent-coral-grad); color:#fff; width:64px; height:64px; border-radius:32px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-soft),var(--shadow-glow); font-size:32px; cursor:pointer; border:none; z-index:100; transition:transform .2s; }
+    .fab:active { transform:scale(.9); }
+    .list-container { display:flex; flex-direction:column; gap:14px; padding-bottom:100px; }
+    .entry-card { background:var(--card-glass); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.05); box-shadow:var(--shadow-soft); padding:20px; border-radius:24px; cursor:pointer; transition:transform .1s; }
+    .entry-card:active { transform:scale(.98); }
+    .entry-date { font-weight:800; font-size:16px; margin-bottom:6px; }
+    .entry-preview { color:var(--muted); font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.5; }
+    .entry-meta { display:flex; justify-content:space-between; margin-top:12px; font-size:13px; color:var(--muted); font-weight:600; }
+    .step { display:none; flex-direction:column; flex:1; }
+    .step.active { display:flex; }
+    .nav-bar { margin-top:auto; padding-top:30px; display:flex; justify-content:space-between; gap:15px; }
+    input[type=range] { -webkit-appearance:none; width:100%; background:transparent; border:none; padding:0; box-shadow:none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; height:40px; width:40px; border-radius:50%; background:var(--accent-coral); box-shadow:0 0 0 6px rgba(255,142,123,.3),var(--shadow-glow); margin-top:-16px; transition:transform .2s; }
+    input[type=range]:active::-webkit-slider-thumb { transform:scale(1.1); }
+    input[type=range]::-webkit-slider-runnable-track { width:100%; height:8px; background:rgba(0,0,0,.2); border-radius:4px; }
+    .big-score { font-size:80px; font-weight:800; text-align:center; color:var(--accent-coral); margin:20px 0 40px; text-shadow:0 5px 15px rgba(255,142,123,.3); }
+    .checkgrid { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-content:start; }
+    .check-btn { background:var(--card-glass); color:var(--muted); font-weight:600; padding:16px; border-radius:50px; text-align:center; font-size:14px; cursor:pointer; user-select:none; transition:all .3s ease; box-shadow:var(--shadow-soft); }
+    .check-btn.checked { background:var(--accent-blue-grad); color:#fff; box-shadow:0 5px 15px rgba(86,204,242,.4); transform:translateY(-2px); }
+    .nav-tabs { display:flex; gap:10px; margin-bottom:24px; background:var(--card-glass); padding:6px; border-radius:50px; backdrop-filter:blur(10px); }
+    .nav-tab { flex:1; padding:12px 20px; border:none; background:transparent; color:var(--muted); font-weight:700; font-size:14px; border-radius:50px; cursor:pointer; transition:all .3s; }
+    .nav-tab.active { background:var(--accent-coral-grad); color:#fff; box-shadow:var(--shadow-glow); }
+    .time-selector { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+    .time-btn { padding:10px 16px; border:none; background:var(--card-glass); color:var(--muted); border-radius:50px; font-weight:600; font-size:13px; cursor:pointer; transition:all .3s; }
+    .time-btn.active { background:var(--accent-blue-grad); color:#fff; box-shadow:0 5px 15px rgba(86,204,242,.4); }
+    .custom-dates { display:none; gap:10px; margin-top:10px; align-items:center; }
+    .custom-dates.active { display:flex; }
+    .custom-dates input { flex:1; min-width:0; padding:10px 14px; font-size:14px; }
+    .stats-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px; }
+    .stat-card { background:var(--card-glass); backdrop-filter:blur(10px); padding:16px; border-radius:20px; text-align:center; border:1px solid rgba(255,255,255,.05); }
+    .stat-value { font-size:28px; font-weight:800; color:var(--accent-coral); margin-bottom:4px; }
+    .stat-label { font-size:12px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+    .chart-container { background:var(--card-glass); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.05); border-radius:24px; padding:20px; margin-bottom:20px; box-shadow:var(--shadow-soft); }
+    .chart-title { font-size:16px; font-weight:700; margin-bottom:16px; }
+    .chart-wrapper { position:relative; height:300px; }
+    .empty-chart { display:flex; align-items:center; justify-content:center; height:100%; color:var(--muted); font-size:14px; font-weight:600; }
+    .load-more { text-align:center; padding:20px; color:var(--muted); font-size:13px; font-weight:600; }
   </style>
 </head>
 <body>
+<div class="wrap">
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tabJournal">📝 Diario</button>
+    <button class="nav-tab" id="tabAnalytics">📊 Análisis</button>
+  </div>
 
-  <div class="wrap">
-
-    <div class="nav-tabs">
-      <button class="nav-tab active" id="tabJournal">📝 Diario</button>
-      <button class="nav-tab" id="tabAnalytics">📊 Análisis</button>
-    </div>
-
-    <div id="viewList" class="view-section active">
-      <header>
-        <h1>Mi Diario</h1>
-        <div class="sub" id="statsLine">Cargando...</div>
-      </header>
-
-      <div class="list-container" id="entriesList"></div>
-
-      <button class="fab" id="btnNew">+</button>
-
-      <div style="margin-top: auto; padding-top:20px; text-align:center; display:flex; justify-content:center; gap:10px; flex-wrap:wrap; opacity: 0.7;">
-        <button class="btn" id="btnExportCSV" style="font-size:12px; padding:10px 16px;">📊 Exportar CSV</button>
-        <button class="btn" id="btnExport" style="font-size:12px; padding:10px 16px;">⚙️ JSON</button>
-        <input type="file" id="importFile" style="display:none" accept=".json">
-        <button class="btn" onclick="document.getElementById('importFile').click()" style="font-size:12px; padding:10px 16px;">📥 Importar</button>
-      </div>
-    </div>
-
-    <div id="viewEditor" class="view-section">
-
-      <div id="step1" class="step active">
-        <h2>¿Qué tal el día?</h2>
-        <label style="font-size:12px; color:var(--muted); margin-bottom:5px; display:block;">Fecha</label>
-        <input type="date" id="dateInput" style="margin-bottom:20px;">
-        <input type="text" id="titleInput" placeholder="Un título breve..." style="margin-bottom:20px; font-weight:bold; font-size: 18px;">
-        <textarea id="textInput" placeholder="Escribe aquí todo lo que ha pasado..."></textarea>
-        <div class="nav-bar">
-          <button class="btn danger" id="btnDeleteEntry">Borrar</button>
-          <button class="btn primary" onclick="goToStep(2)">Siguiente</button>
-        </div>
-      </div>
-
-      <div id="step2" class="step">
-        <h2>Puntuación del día</h2>
-        <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
-          <div class="big-score" id="scoreDisplay">5.0</div>
-          <input type="range" id="scoreInput" min="1" max="10" step="0.1" value="5">
-          <div style="text-align:center; color:var(--muted); margin-top:20px; font-weight: 600;">Desliza para puntuar</div>
-        </div>
-        <div class="nav-bar">
-          <button class="btn" onclick="goToStep(1)">Atrás</button>
-          <button class="btn primary" onclick="goToStep(3)">Siguiente</button>
-        </div>
-      </div>
-
-      <div id="step3" class="step">
-        <h2>¿Qué has hecho hoy?</h2>
-        <div class="checkgrid" id="gridActivities"></div>
-        <div class="nav-bar">
-          <button class="btn" onclick="goToStep(2)">Atrás</button>
-          <button class="btn primary" onclick="goToStep(4)">Siguiente</button>
-        </div>
-      </div>
-
-      <div id="step4" class="step">
-        <h2>¿Cómo te has sentido?</h2>
-        <div class="checkgrid" id="gridEmotions"></div>
-        <div class="nav-bar">
-          <button class="btn" onclick="goToStep(3)">Atrás</button>
-          <button class="btn primary" id="btnFinish">Guardar Entrada ✓</button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ANALYTICS VIEW -->
-    <div id="viewAnalytics" class="view-section">
-      <header>
-        <h1>Análisis</h1>
-        <div class="sub">Visualiza tus patrones y tendencias</div>
-      </header>
-
-      <!-- Time Range Selector -->
-      <div class="time-selector">
-        <button class="time-btn active" data-range="month">Este mes</button>
-        <button class="time-btn" data-range="prevmonth">Mes anterior</button>
-        <button class="time-btn" data-range="6months">Últimos 6 meses</button>
-        <button class="time-btn" data-range="year">Este año</button>
-        <button class="time-btn" data-range="all">Todo</button>
-        <button class="time-btn" data-range="custom">Personalizado</button>
-      </div>
-
-      <div class="custom-dates" id="customDates">
-        <input type="date" id="customStart" />
-        <span style="color: var(--muted);">→</span>
-        <input type="date" id="customEnd" />
-        <button class="btn primary" id="btnApplyCustom">Aplicar</button>
-      </div>
-
-      <!-- Summary Stats -->
-      <div class="stats-cards" id="statsCards">
-        <div class="stat-card">
-          <div class="stat-value" id="statEntries">0</div>
-          <div class="stat-label">Entradas</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="statAvgMood">0.0</div>
-          <div class="stat-label">Ánimo promedio</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="statBestDay">-</div>
-          <div class="stat-label">Mejor día</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="statVariance">0.00000</div>
-          <div class="stat-label">Varianza ánimo</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="statAvgActivities">0.00000</div>
-          <div class="stat-label">Actividades/día</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="statAvgEmotions">0.00000</div>
-          <div class="stat-label">Emociones/día</div>
-        </div>
-      </div>
-
-      <!-- Chart 1: Mood Timeline -->
-      <div class="chart-container">
-        <div class="chart-title">📈 Evolución del ánimo</div>
-        <div class="chart-wrapper">
-          <canvas id="chartMood"></canvas>
-        </div>
-      </div>
-
-      <!-- Chart 2: Activity Frequency -->
-      <div class="chart-container">
-        <div class="chart-title">🎯 Frecuencia de actividades</div>
-        <div class="chart-wrapper">
-          <canvas id="chartActivities"></canvas>
-        </div>
-      </div>
-
-      <!-- Chart 3: Emotion Distribution -->
-      <div class="chart-container">
-        <div class="chart-title">😊 Distribución de emociones</div>
-        <div class="chart-wrapper">
-          <canvas id="chartEmotions"></canvas>
-        </div>
-      </div>
-
+  <!-- LIST VIEW -->
+  <div id="viewList" class="view-section active">
+    <header>
+      <h1>Mi Diario</h1>
+      <div class="sub" id="statsLine">Cargando...</div>
+    </header>
+    <div class="list-container" id="entriesList"></div>
+    <button class="fab" id="btnNew">+</button>
+    <div style="margin-top:auto;padding-top:20px;text-align:center;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;opacity:.7;">
+      <button class="btn" id="btnExportCSV" style="font-size:12px;padding:10px 16px;">📊 CSV</button>
+      <button class="btn" id="btnExport" style="font-size:12px;padding:10px 16px;">⚙️ JSON</button>
+      <input type="file" id="importFile" style="display:none" accept=".json">
+      <button class="btn" onclick="document.getElementById('importFile').click()" style="font-size:12px;padding:10px 16px;">📥 Importar</button>
     </div>
   </div>
 
+  <!-- EDITOR VIEW -->
+  <div id="viewEditor" class="view-section">
+    <div id="step1" class="step active">
+      <h2>¿Qué tal el día?</h2>
+      <label style="font-size:12px;color:var(--muted);margin-bottom:5px;display:block;">Fecha</label>
+      <input type="date" id="dateInput" style="margin-bottom:20px;">
+      <input type="text" id="titleInput" placeholder="Un título breve..." style="margin-bottom:20px;font-weight:bold;font-size:18px;">
+      <textarea id="textInput" placeholder="Escribe aquí todo lo que ha pasado..."></textarea>
+      <div class="nav-bar">
+        <button class="btn danger" id="btnDeleteEntry">Borrar</button>
+        <button class="btn primary" onclick="goToStep(2)">Siguiente</button>
+      </div>
+    </div>
+    <div id="step2" class="step">
+      <h2>Puntuación del día</h2>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <div class="big-score" id="scoreDisplay">5.0</div>
+        <input type="range" id="scoreInput" min="1" max="10" step="0.1" value="5">
+        <div style="text-align:center;color:var(--muted);margin-top:20px;font-weight:600;">Desliza para puntuar</div>
+      </div>
+      <div class="nav-bar">
+        <button class="btn" onclick="goToStep(1)">Atrás</button>
+        <button class="btn primary" onclick="goToStep(3)">Siguiente</button>
+      </div>
+    </div>
+    <div id="step3" class="step">
+      <h2>¿Qué has hecho hoy?</h2>
+      <div class="checkgrid" id="gridActivities"></div>
+      <div class="nav-bar">
+        <button class="btn" onclick="goToStep(2)">Atrás</button>
+        <button class="btn primary" onclick="goToStep(4)">Siguiente</button>
+      </div>
+    </div>
+    <div id="step4" class="step">
+      <h2>¿Cómo te has sentido?</h2>
+      <div class="checkgrid" id="gridEmotions"></div>
+      <div class="nav-bar">
+        <button class="btn" onclick="goToStep(3)">Atrás</button>
+        <button class="btn primary" id="btnFinish">Guardar Entrada ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS VIEW -->
+  <div id="viewAnalytics" class="view-section">
+    <header>
+      <h1>Análisis</h1>
+      <div class="sub">Visualiza tus patrones y tendencias</div>
+    </header>
+    <div class="time-selector">
+      <button class="time-btn active" data-range="month">Este mes</button>
+      <button class="time-btn" data-range="prevmonth">Mes anterior</button>
+      <button class="time-btn" data-range="6months">Últimos 6 meses</button>
+      <button class="time-btn" data-range="year">Este año</button>
+      <button class="time-btn" data-range="all">Todo</button>
+      <button class="time-btn" data-range="custom">Personalizado</button>
+    </div>
+    <div class="custom-dates" id="customDates">
+      <input type="date" id="customStart">
+      <span style="color:var(--muted);">→</span>
+      <input type="date" id="customEnd">
+      <button class="btn primary" id="btnApplyCustom">Aplicar</button>
+    </div>
+    <div class="stats-cards">
+      <div class="stat-card"><div class="stat-value" id="statEntries">0</div><div class="stat-label">Entradas</div></div>
+      <div class="stat-card"><div class="stat-value" id="statAvgMood">0.0</div><div class="stat-label">Ánimo promedio</div></div>
+      <div class="stat-card"><div class="stat-value" id="statBestDay">-</div><div class="stat-label">Mejor día</div></div>
+      <div class="stat-card"><div class="stat-value" id="statVariance">0.00</div><div class="stat-label">Varianza ánimo</div></div>
+      <div class="stat-card"><div class="stat-value" id="statAvgActivities">0.00</div><div class="stat-label">Actividades/día</div></div>
+      <div class="stat-card"><div class="stat-value" id="statAvgEmotions">0.00</div><div class="stat-label">Emociones/día</div></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">📈 Evolución del ánimo</div>
+      <div class="chart-wrapper"><canvas id="chartMood"></canvas></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">🎯 Frecuencia de actividades</div>
+      <div class="chart-wrapper"><canvas id="chartActivities"></canvas></div>
+    </div>
+    <div class="chart-container">
+      <div class="chart-title">😊 Distribución de emociones</div>
+      <div class="chart-wrapper"><canvas id="chartEmotions"></canvas></div>
+    </div>
+  </div>
+</div>
+
 <script>
-(() => {
-  const STORAGE_KEY = "journal:v1";
+(function() {
+  "use strict";
 
-  const ACTIVITIES = ["Family","School/work","Relationship","Friends/colleagues","Health","Hobbies","Sleep","Relaxing","Exercise"];
-  const EMOTIONS = ["Happy","Good","Confused/thoughtful","Bored/tired/neutral","Awkward","Stressed","Angry/ pissed","Anxious","Down"];
+  var STORAGE_KEY = "journal:v1";
+  var PAGE_SIZE = 30;
 
-  let entries = [];
-  let currentEntry = {};
-  let isEditing = false;
+  var ACTIVITIES = ["Family","School/work","Relationship","Friends/colleagues","Health","Hobbies","Sleep","Relaxing","Exercise"];
+  var EMOTIONS   = ["Happy","Good","Confused/thoughtful","Bored/tired/neutral","Awkward","Stressed","Angry/ pissed","Anxious","Down"];
 
-  const viewList = document.getElementById("viewList");
-  const viewEditor = document.getElementById("viewEditor");
-  const entriesListEl = document.getElementById("entriesList");
-  const statsLine = document.getElementById("statsLine");
+  var entries = [];
+  var currentEntry = {};
+  var currentPage = 0;
+  var currentRange = "month";
+  var customStartDate = null;
+  var customEndDate = null;
+  var moodChart = null;
+  var activitiesChart = null;
+  var emotionsChart = null;
 
-  const dateInput = document.getElementById("dateInput");
-  const titleInput = document.getElementById("titleInput");
-  const textInput = document.getElementById("textInput");
-  const scoreInput = document.getElementById("scoreInput");
-  const scoreDisplay = document.getElementById("scoreDisplay");
+  // DOM
+  var viewList      = document.getElementById("viewList");
+  var viewEditor    = document.getElementById("viewEditor");
+  var viewAnalytics = document.getElementById("viewAnalytics");
+  var entriesListEl = document.getElementById("entriesList");
+  var statsLine     = document.getElementById("statsLine");
+  var dateInput     = document.getElementById("dateInput");
+  var titleInput    = document.getElementById("titleInput");
+  var textInput     = document.getElementById("textInput");
+  var scoreInput    = document.getElementById("scoreInput");
+  var scoreDisplay  = document.getElementById("scoreDisplay");
 
-  try {
-    loadData();
-    renderHome();
-  } catch(e) {
-    console.error("Error al iniciar la app:", e);
-    showCrashBanner(e);
+  // ── UTILS ──────────────────────────────────────────────
+  function localDateStr(d) {
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
   }
 
-  // -------------------------------------------------------
-  // HELPER: fecha local como string YYYY-MM-DD sin desfase UTC
-  // -------------------------------------------------------
-  function localDateStr(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
-
-  // --- NAVEGACIÓN ---
-  window.goToStep = (stepNum) => {
-    document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-    document.getElementById(`step${stepNum}`).classList.add('active');
-  };
-
-  function showHome() {
-    viewEditor.classList.remove("active");
-    viewList.classList.add("active");
-    renderHome();
-  }
-
-  function startEditor(dateToEdit = null) {
-    goToStep(1);
-    viewList.classList.remove("active");
-    viewEditor.classList.add("active");
-
-    if (dateToEdit) {
-      isEditing = true;
-      currentEntry = entries.find(e => e.date === dateToEdit);
-      if(!currentEntry) currentEntry = createEmptyEntry(dateToEdit);
-    } else {
-      isEditing = false;
-      const today = localDateStr(new Date());
-      const existing = entries.find(e => e.date === today);
-      if (existing) {
-        currentEntry = existing;
-        isEditing = true;
-      } else {
-        currentEntry = createEmptyEntry(today);
-      }
-    }
-
-    dateInput.value = currentEntry.date;
-    titleInput.value = currentEntry.title || "";
-    textInput.value = currentEntry.text || "";
-    scoreInput.value = currentEntry.score || 5;
-    scoreDisplay.textContent = Number(scoreInput.value).toFixed(1);
-
-    renderCheckGrid("gridActivities", ACTIVITIES, currentEntry.activities || []);
-    renderCheckGrid("gridEmotions", EMOTIONS, currentEntry.emotions || []);
-  }
-
-  function createEmptyEntry(date) {
-    return { date, title:"", text:"", score: 5.0, activities:[], emotions:[] };
-  }
-
-  function saveCurrentState() {
-    currentEntry.date = dateInput.value;
-    currentEntry.title = titleInput.value;
-    currentEntry.text = textInput.value;
-    currentEntry.score = Number(scoreInput.value);
-    currentEntry.activities = getCheckedValues("gridActivities");
-    currentEntry.emotions = getCheckedValues("gridEmotions");
-
-    const idx = entries.findIndex(e => e.date === currentEntry.date);
-    if (idx >= 0) entries[idx] = currentEntry;
-    else entries.push(currentEntry);
-
-    entries.sort((a,b) => b.date.localeCompare(a.date));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  }
-
-  document.getElementById("btnFinish").addEventListener("click", () => {
-    saveCurrentState();
-    showHome();
-  });
-
-  document.getElementById("btnDeleteEntry").addEventListener("click", () => {
-    if(!confirm("¿Borrar esta entrada?")) return;
-    entries = entries.filter(e => e.date !== currentEntry.date);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-    showHome();
-  });
-
+  // ── DATA ───────────────────────────────────────────────
   function loadData() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      var raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) { entries = []; return; }
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) throw new Error("Datos corruptos: no es un array");
-      entries = parsed.filter(e => e && typeof e.date === 'string');
+      var parsed = JSON.parse(raw);
+      entries = Array.isArray(parsed)
+        ? parsed.filter(function(e) { return e && typeof e.date === "string"; })
+        : [];
     } catch(e) {
-      console.error("Error leyendo localStorage:", e);
       entries = [];
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) localStorage.setItem(STORAGE_KEY + "_backup", raw);
-      } catch(_) {}
     }
   }
 
-  function showCrashBanner(err) {
-    const wrap = document.querySelector('.wrap');
-    if (!wrap) return;
-    wrap.innerHTML = \`
-      <div style="padding:40px 24px; text-align:center; display:flex; flex-direction:column; gap:20px; align-items:center;">
-        <div style="font-size:48px;">⚠️</div>
-        <h2 style="margin:0;">Algo salió mal</h2>
-        <p style="color:var(--muted); font-size:14px; margin:0;">
-          Error al cargar la app:<br><code style="font-size:12px; word-break:break-all;">\${err?.message || err}</code>
-        </p>
-        <button class="btn primary" onclick="recoverData()">🔄 Intentar recuperar datos</button>
-        <button class="btn danger" onclick="clearAndReload()" style="font-size:13px;">🗑️ Limpiar y reiniciar</button>
-      </div>
-    \`;
-  }
-
-  window.recoverData = function() {
+  function saveData() {
     try {
-      const backup = localStorage.getItem(STORAGE_KEY + "_backup");
-      if (backup) {
-        const parsed = JSON.parse(backup);
-        if (Array.isArray(parsed)) {
-          localStorage.setItem(STORAGE_KEY, backup);
-          location.reload();
-          return;
-        }
-      }
-    } catch(_) {}
-    clearAndReload();
-  };
-
-  window.clearAndReload = function() {
-    if (confirm("¿Seguro? Se borrarán todos los datos locales.")) {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(STORAGE_KEY + "_backup");
-      location.reload();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    } catch(e) {
+      alert("Error al guardar: " + e.message);
     }
+  }
+
+  // ── NAVIGATION ─────────────────────────────────────────
+  window.goToStep = function(n) {
+    document.querySelectorAll(".step").forEach(function(el) { el.classList.remove("active"); });
+    document.getElementById("step" + n).classList.add("active");
   };
 
-  const PAGE_SIZE = 30;
-  let currentPage = 0;
+  function showView(name) {
+    viewList.classList.remove("active");
+    viewEditor.classList.remove("active");
+    viewAnalytics.classList.remove("active");
+    if (name === "list")      { viewList.classList.add("active"); renderHome(); }
+    if (name === "editor")    { viewEditor.classList.add("active"); }
+    if (name === "analytics") { viewAnalytics.classList.add("active"); renderAnalytics(); }
+  }
 
+  // ── HOME ───────────────────────────────────────────────
   function renderHome() {
     entriesListEl.innerHTML = "";
     currentPage = 0;
-    statsLine.textContent = `${entries.length} entradas guardadas`;
-
+    statsLine.textContent = entries.length + " entradas guardadas";
     if (entries.length === 0) {
-      entriesListEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted); font-weight:600;">No hay entradas aún.<br>Pulsa + para empezar.</div>`;
+      entriesListEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);font-weight:600;">No hay entradas aún.<br>Pulsa + para empezar.</div>';
       return;
     }
-
     renderNextPage();
-
-    // Infinite scroll: cargar más al acercarse al fondo
-    const wrap = document.querySelector('.wrap');
-    wrap.removeEventListener('scroll', onListScroll);
-    wrap.addEventListener('scroll', onListScroll);
+    var wrap = document.querySelector(".wrap");
+    wrap.removeEventListener("scroll", onWrapScroll);
+    wrap.addEventListener("scroll", onWrapScroll);
   }
 
-  function onListScroll() {
-    const wrap = document.querySelector('.wrap');
-    if (!viewList.classList.contains('active')) return;
-    if (wrap.scrollTop + wrap.clientHeight >= wrap.scrollHeight - 200) {
+  function onWrapScroll() {
+    if (!viewList.classList.contains("active")) return;
+    var wrap = document.querySelector(".wrap");
+    if (wrap.scrollTop + wrap.clientHeight >= wrap.scrollHeight - 300) {
       renderNextPage();
     }
   }
 
   function renderNextPage() {
-    const start = currentPage * PAGE_SIZE;
-    const end = Math.min(start + PAGE_SIZE, entries.length);
+    var start = currentPage * PAGE_SIZE;
     if (start >= entries.length) return;
+    var end = Math.min(start + PAGE_SIZE, entries.length);
 
-    // Eliminar el loader si existe
-    const existingLoader = entriesListEl.querySelector('.load-more-indicator');
-    if (existingLoader) existingLoader.remove();
+    var old = entriesListEl.querySelector(".load-more");
+    if (old) old.remove();
 
-    const fragment = document.createDocumentFragment();
-    for (let i = start; i < end; i++) {
-      const e = entries[i];
-      const card = document.createElement("div");
-      card.className = "entry-card";
-      card.innerHTML = `
-        <div class="entry-date">${e.date} ${e.title ? "· " + e.title : ""}</div>
-        <div class="entry-preview">${e.text || "Sin texto..."}</div>
-        <div class="entry-meta">
-          <span style="color:var(--accent-coral); font-weight:800;">★ ${Number(e.score).toFixed(1)}</span>
-          <span>${(e.activities||[]).length} act · ${(e.emotions||[]).length} emo</span>
-        </div>
-      `;
-      card.addEventListener("click", () => startEditor(e.date));
-      fragment.appendChild(card);
+    var frag = document.createDocumentFragment();
+    for (var i = start; i < end; i++) {
+      frag.appendChild(makeCard(entries[i]));
     }
-    entriesListEl.appendChild(fragment);
+    entriesListEl.appendChild(frag);
     currentPage++;
 
-    // Mostrar indicador si quedan más
     if (end < entries.length) {
-      const loader = document.createElement('div');
-      loader.className = 'load-more-indicator';
-      loader.style.cssText = 'text-align:center; padding:20px; color:var(--muted); font-size:13px; font-weight:600;';
-      loader.textContent = `Mostrando ${end} de ${entries.length} entradas...`;
+      var loader = document.createElement("div");
+      loader.className = "load-more";
+      loader.textContent = "Mostrando " + end + " de " + entries.length + " entradas";
       entriesListEl.appendChild(loader);
     }
   }
 
-  function renderCheckGrid(id, items, selectedItems) {
-    const container = document.getElementById(id);
+  function makeCard(e) {
+    var card = document.createElement("div");
+    card.className = "entry-card";
+    var title = e.title ? " · " + e.title : "";
+    var preview = e.text || "Sin texto...";
+    var score = Number(e.score || 0).toFixed(1);
+    var acts = (e.activities || []).length;
+    var emos = (e.emotions || []).length;
+    card.innerHTML =
+      '<div class="entry-date">' + e.date + title + "</div>" +
+      '<div class="entry-preview">' + preview + "</div>" +
+      '<div class="entry-meta">' +
+        '<span style="color:var(--accent-coral);font-weight:800;">★ ' + score + "</span>" +
+        "<span>" + acts + " act · " + emos + " emo</span>" +
+      "</div>";
+    card.addEventListener("click", function() { startEditor(e.date); });
+    return card;
+  }
+
+  // ── EDITOR ─────────────────────────────────────────────
+  function startEditor(dateToEdit) {
+    goToStep(1);
+    showView("editor");
+    if (dateToEdit) {
+      currentEntry = entries.find(function(e) { return e.date === dateToEdit; }) || createEmpty(dateToEdit);
+    } else {
+      var today = localDateStr(new Date());
+      currentEntry = entries.find(function(e) { return e.date === today; }) || createEmpty(today);
+    }
+    dateInput.value  = currentEntry.date;
+    titleInput.value = currentEntry.title || "";
+    textInput.value  = currentEntry.text  || "";
+    scoreInput.value = currentEntry.score || 5;
+    scoreDisplay.textContent = Number(scoreInput.value).toFixed(1);
+    renderCheckGrid("gridActivities", ACTIVITIES, currentEntry.activities || []);
+    renderCheckGrid("gridEmotions",   EMOTIONS,   currentEntry.emotions   || []);
+  }
+
+  function createEmpty(date) {
+    return { date: date, title: "", text: "", score: 5.0, activities: [], emotions: [] };
+  }
+
+  function saveCurrentState() {
+    currentEntry.date       = dateInput.value;
+    currentEntry.title      = titleInput.value;
+    currentEntry.text       = textInput.value;
+    currentEntry.score      = Number(scoreInput.value);
+    currentEntry.activities = getChecked("gridActivities");
+    currentEntry.emotions   = getChecked("gridEmotions");
+    var idx = entries.findIndex(function(e) { return e.date === currentEntry.date; });
+    if (idx >= 0) entries[idx] = currentEntry; else entries.push(currentEntry);
+    entries.sort(function(a, b) { return b.date.localeCompare(a.date); });
+    saveData();
+  }
+
+  function renderCheckGrid(id, items, selected) {
+    var container = document.getElementById(id);
     container.innerHTML = "";
-    const set = new Set(selectedItems);
-    items.forEach(item => {
-      const div = document.createElement("div");
+    var set = new Set(selected);
+    items.forEach(function(item) {
+      var div = document.createElement("div");
       div.className = "check-btn" + (set.has(item) ? " checked" : "");
       div.textContent = item;
-      div.onclick = () => div.classList.toggle("checked");
+      div.onclick = function() { div.classList.toggle("checked"); };
       container.appendChild(div);
     });
   }
 
-  function getCheckedValues(containerId) {
-    const container = document.getElementById(containerId);
-    return Array.from(container.querySelectorAll(".check-btn.checked")).map(d => d.textContent);
+  function getChecked(id) {
+    return Array.from(document.getElementById(id).querySelectorAll(".check-btn.checked"))
+      .map(function(d) { return d.textContent; });
   }
 
-  function escapeCSV(value) {
-    if (value == null) return "";
-    const str = String(value);
-    if (/[",\n]/.test(str)) return '"' + str.replace(/"/g,'""') + '"';
-    return str;
-  }
+  // ── EVENTS ─────────────────────────────────────────────
+  document.getElementById("tabJournal").addEventListener("click", function() {
+    document.getElementById("tabJournal").classList.add("active");
+    document.getElementById("tabAnalytics").classList.remove("active");
+    showView("list");
+  });
 
-  function downloadText(filename, content, mime) {
-    const blob = new Blob([content], { type: mime || "text/plain;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+  document.getElementById("tabAnalytics").addEventListener("click", function() {
+    document.getElementById("tabAnalytics").classList.add("active");
+    document.getElementById("tabJournal").classList.remove("active");
+    showView("analytics");
+  });
+
+  document.getElementById("btnNew").addEventListener("click", function() { startEditor(null); });
+
+  scoreInput.addEventListener("input", function() {
+    scoreDisplay.textContent = Number(scoreInput.value).toFixed(1);
+  });
+
+  document.getElementById("btnFinish").addEventListener("click", function() {
+    saveCurrentState();
+    showView("list");
+  });
+
+  document.getElementById("btnDeleteEntry").addEventListener("click", function() {
+    if (!confirm("¿Borrar esta entrada?")) return;
+    entries = entries.filter(function(e) { return e.date !== currentEntry.date; });
+    saveData();
+    showView("list");
+  });
+
+  // Export / Import
+  document.getElementById("btnExport").addEventListener("click", function() {
+    download("journal_backup_" + localDateStr(new Date()) + ".json", JSON.stringify(entries, null, 2), "application/json");
+  });
+
+  document.getElementById("btnExportCSV").addEventListener("click", function() {
+    download("journal_export.csv", generateCSV(), "text/csv;charset=utf-8;");
+  });
+
+  document.getElementById("importFile").addEventListener("change", function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var imported = JSON.parse(ev.target.result);
+        if (Array.isArray(imported) && confirm("Importar " + imported.length + " entradas?")) {
+          entries = imported;
+          saveData();
+          renderHome();
+        }
+      } catch(err) {
+        alert("Error al importar JSON");
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // Time range buttons
+  document.querySelectorAll(".time-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      document.querySelectorAll(".time-btn").forEach(function(b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      currentRange = btn.dataset.range;
+      var cd = document.getElementById("customDates");
+      if (currentRange === "custom") { cd.classList.add("active"); }
+      else { cd.classList.remove("active"); renderAnalytics(); }
+    });
+  });
+
+  document.getElementById("btnApplyCustom").addEventListener("click", function() {
+    var s = document.getElementById("customStart").value;
+    var en = document.getElementById("customEnd").value;
+    if (s && en) { customStartDate = s; customEndDate = en; renderAnalytics(); }
+  });
+
+  // ── EXPORT HELPERS ─────────────────────────────────────
+  function download(filename, content, mime) {
+    var blob = new Blob([content], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
     a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
 
   function generateCSV() {
-    const header = ["Date","Score","Title","Text", ...ACTIVITIES, ...EMOTIONS];
-    const lines = [header.join(",")];
-    for (const e of entries) {
-      const row = [];
-      row.push(escapeCSV(e.date));
-      row.push(escapeCSV(e.score));
-      row.push(escapeCSV(e.title));
-      row.push(escapeCSV(e.text));
-      const acts = new Set(e.activities || []);
-      ACTIVITIES.forEach(a => row.push(acts.has(a) ? "1" : "0"));
-      const emos = new Set(e.emotions || []);
-      EMOTIONS.forEach(em => row.push(emos.has(em) ? "1" : "0"));
+    var header = ["Date","Score","Title","Text"].concat(ACTIVITIES).concat(EMOTIONS);
+    var lines = [header.join(",")];
+    entries.forEach(function(e) {
+      var row = [csv(e.date), csv(e.score), csv(e.title), csv(e.text)];
+      var acts = new Set(e.activities || []);
+      var emos = new Set(e.emotions   || []);
+      ACTIVITIES.forEach(function(a)  { row.push(acts.has(a)  ? "1" : "0"); });
+      EMOTIONS.forEach(function(em) { row.push(emos.has(em) ? "1" : "0"); });
       lines.push(row.join(","));
-    }
+    });
     return lines.join("\n");
   }
 
-  document.getElementById("btnNew").addEventListener("click", () => startEditor(null));
-  scoreInput.addEventListener("input", (e) => { scoreDisplay.textContent = Number(e.target.value).toFixed(1); });
-  document.getElementById("btnExport").addEventListener("click", () => { downloadText(`journal_backup_${localDateStr(new Date())}.json`, JSON.stringify(entries,null,2), "application/json"); });
-  document.getElementById("btnExportCSV").addEventListener("click", () => { const csv = generateCSV(); downloadText("journal_export.csv", csv, "text/csv;charset=utf-8;"); });
-  document.getElementById("importFile").addEventListener("change", async (e) => {
-    const file = e.target.files[0]; if(!file) return;
-    try {
-      const text = await file.text(); const imported = JSON.parse(text);
-      if(Array.isArray(imported) && confirm(`Importar ${imported.length} entradas?`)) {
-        entries = imported; localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); renderHome();
-      }
-    } catch(err) { alert("Error al importar JSON"); }
-  });
+  function csv(v) {
+    if (v == null) return "";
+    var s = String(v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
 
-  // --- ANALYTICS ---
-  const viewAnalytics = document.getElementById("viewAnalytics");
-  const tabJournal = document.getElementById("tabJournal");
-  const tabAnalytics = document.getElementById("tabAnalytics");
-
-  let currentRange = 'month';
-  let customStartDate = null;
-  let customEndDate = null;
-
-  let moodChart = null;
-  let activitiesChart = null;
-  let emotionsChart = null;
-
-  tabJournal.addEventListener("click", () => {
-    tabJournal.classList.add("active");
-    tabAnalytics.classList.remove("active");
-    viewAnalytics.classList.remove("active");
-    viewList.classList.add("active");
-    viewEditor.classList.remove("active");
-  });
-
-  tabAnalytics.addEventListener("click", () => {
-    tabAnalytics.classList.add("active");
-    tabJournal.classList.remove("active");
-    viewList.classList.remove("active");
-    viewEditor.classList.remove("active");
-    viewAnalytics.classList.add("active");
-    renderAnalytics();
-  });
-
-  document.querySelectorAll('.time-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentRange = btn.dataset.range;
-
-      const customDates = document.getElementById('customDates');
-      if (currentRange === 'custom') {
-        customDates.classList.add('active');
-      } else {
-        customDates.classList.remove('active');
-        renderAnalytics();
-      }
-    });
-  });
-
-  document.getElementById('btnApplyCustom').addEventListener('click', () => {
-    const start = document.getElementById('customStart').value;
-    const end = document.getElementById('customEnd').value;
-    if (start && end) {
-      customStartDate = start;
-      customEndDate = end;
-      renderAnalytics();
+  // ── ANALYTICS ──────────────────────────────────────────
+  function getFiltered() {
+    var now = new Date();
+    if (currentRange === "custom" && customStartDate && customEndDate) {
+      return entries.filter(function(e) { return e.date >= customStartDate && e.date <= customEndDate; });
     }
-  });
+    if (currentRange === "all") return entries.slice();
 
-  // -------------------------------------------------------
-  // FIX: getFilteredEntries usa localDateStr en vez de toISOString
-  // para evitar el desfase UTC que hacía pillar el día 31 del mes anterior
-  // -------------------------------------------------------
-  function getFilteredEntries() {
-    const now = new Date();
-
-    if (currentRange === 'custom' && customStartDate && customEndDate) {
-      return entries.filter(e => e.date >= customStartDate && e.date <= customEndDate);
+    var startStr, endStr;
+    if (currentRange === "month") {
+      startStr = localDateStr(new Date(now.getFullYear(), now.getMonth(), 1));
+    } else if (currentRange === "prevmonth") {
+      startStr = localDateStr(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+      endStr   = localDateStr(new Date(now.getFullYear(), now.getMonth(), 0));
+    } else if (currentRange === "6months") {
+      startStr = localDateStr(new Date(now.getFullYear(), now.getMonth() - 6, now.getDate()));
+    } else if (currentRange === "year") {
+      startStr = localDateStr(new Date(now.getFullYear(), 0, 1));
+    } else {
+      startStr = localDateStr(new Date(now.getFullYear(), now.getMonth(), 1));
     }
 
-    // Opción "Todo": devuelve todas las entradas sin filtro
-    if (currentRange === 'all') {
-      return [...entries];
-    }
-
-    let startStr, endStr;
-
-    switch(currentRange) {
-      case 'month': {
-        // Primer día del mes actual (sin desfase UTC)
-        const start = new Date(now.getFullYear(), now.getMonth(), 1);
-        startStr = localDateStr(start);
-        break;
-      }
-      case 'prevmonth': {
-        // Primer y último día del mes anterior
-        const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const end = new Date(now.getFullYear(), now.getMonth(), 0); // día 0 = último del mes anterior
-        startStr = localDateStr(start);
-        endStr = localDateStr(end);
-        break;
-      }
-      case '6months': {
-        const start = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-        startStr = localDateStr(start);
-        break;
-      }
-      case 'year': {
-        const start = new Date(now.getFullYear(), 0, 1);
-        startStr = localDateStr(start);
-        break;
-      }
-      default: {
-        const start = new Date(now.getFullYear(), now.getMonth(), 1);
-        startStr = localDateStr(start);
-      }
-    }
-
-    if (endStr) {
-      return entries.filter(e => e.date >= startStr && e.date <= endStr);
-    }
-    return entries.filter(e => e.date >= startStr);
+    return endStr
+      ? entries.filter(function(e) { return e.date >= startStr && e.date <= endStr; })
+      : entries.filter(function(e) { return e.date >= startStr; });
   }
 
   function renderAnalytics() {
-    const filtered = getFilteredEntries();
-
-    document.getElementById('statEntries').textContent = filtered.length;
+    var filtered = getFiltered();
+    document.getElementById("statEntries").textContent = filtered.length;
 
     if (filtered.length > 0) {
-      const avgMood = filtered.reduce((sum, e) => sum + (e.score || 0), 0) / filtered.length;
-      document.getElementById('statAvgMood').textContent = avgMood.toFixed(5);
+      var avg = filtered.reduce(function(s, e) { return s + (e.score || 0); }, 0) / filtered.length;
+      document.getElementById("statAvgMood").textContent = avg.toFixed(2);
 
-      const bestEntry = filtered.reduce((best, e) => (e.score > best.score ? e : best), filtered[0]);
-      document.getElementById('statBestDay').textContent = bestEntry.date.slice(5);
+      var best = filtered.reduce(function(b, e) { return e.score > b.score ? e : b; }, filtered[0]);
+      document.getElementById("statBestDay").textContent = best.date.slice(5);
 
-      const variance = filtered.reduce((sum, e) => {
-        const diff = (e.score || 0) - avgMood;
-        return sum + (diff * diff);
-      }, 0) / filtered.length;
-      document.getElementById('statVariance').textContent = variance.toFixed(5);
+      var variance = filtered.reduce(function(s, e) { var d = (e.score||0) - avg; return s + d*d; }, 0) / filtered.length;
+      document.getElementById("statVariance").textContent = variance.toFixed(2);
 
-      const totalActivities = filtered.reduce((sum, e) => sum + (e.activities || []).length, 0);
-      document.getElementById('statAvgActivities').textContent = (totalActivities / filtered.length).toFixed(5);
+      var totalAct = filtered.reduce(function(s, e) { return s + (e.activities||[]).length; }, 0);
+      document.getElementById("statAvgActivities").textContent = (totalAct / filtered.length).toFixed(2);
 
-      const totalEmotions = filtered.reduce((sum, e) => sum + (e.emotions || []).length, 0);
-      document.getElementById('statAvgEmotions').textContent = (totalEmotions / filtered.length).toFixed(5);
+      var totalEmo = filtered.reduce(function(s, e) { return s + (e.emotions||[]).length; }, 0);
+      document.getElementById("statAvgEmotions").textContent = (totalEmo / filtered.length).toFixed(2);
     } else {
-      document.getElementById('statAvgMood').textContent = '0.00000';
-      document.getElementById('statBestDay').textContent = '-';
-      document.getElementById('statVariance').textContent = '0.00000';
-      document.getElementById('statAvgActivities').textContent = '0.00000';
-      document.getElementById('statAvgEmotions').textContent = '0.00000';
+      ["statAvgMood","statBestDay","statVariance","statAvgActivities","statAvgEmotions"].forEach(function(id) {
+        document.getElementById(id).textContent = "-";
+      });
     }
 
     renderMoodChart(filtered);
@@ -874,107 +550,96 @@
     renderEmotionsChart(filtered);
   }
 
+  function destroyChart(c) { if (c) { try { c.destroy(); } catch(e) {} } return null; }
+
   function renderMoodChart(filtered) {
-    const wrapper = document.getElementById('chartMood').parentElement;
-    if (moodChart) { moodChart.destroy(); moodChart = null; }
-    if (filtered.length === 0) { wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>'; return; }
+    var wrapper = document.getElementById("chartMood").parentElement;
+    moodChart = destroyChart(moodChart);
+    if (!filtered.length) { wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>'; return; }
     wrapper.innerHTML = '<canvas id="chartMood"></canvas>';
-    const sorted = [...filtered].sort((a, b) => a.date.localeCompare(b.date));
-    moodChart = new Chart(document.getElementById('chartMood'), {
-      type: 'line',
+    var sorted = filtered.slice().sort(function(a,b) { return a.date.localeCompare(b.date); });
+    moodChart = new Chart(document.getElementById("chartMood"), {
+      type: "line",
       data: {
-        labels: sorted.map(e => e.date),
+        labels: sorted.map(function(e) { return e.date; }),
         datasets: [{
-          label: 'Ánimo',
-          data: sorted.map(e => e.score || 0),
-          borderColor: '#FF8E7B',
-          backgroundColor: 'rgba(255, 142, 123, 0.1)',
+          data: sorted.map(function(e) { return e.score || 0; }),
+          borderColor: "#FF8E7B", backgroundColor: "rgba(255,142,123,0.1)",
           borderWidth: 3, fill: true, tension: 0.4,
-          pointRadius: 5, pointBackgroundColor: '#FF8E7B',
-          pointBorderColor: '#fff', pointBorderWidth: 2, pointHoverRadius: 7
+          pointRadius: 5, pointBackgroundColor: "#FF8E7B", pointBorderColor: "#fff", pointBorderWidth: 2
         }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        onClick: (event, elements) => {
-          if (elements.length > 0) {
-            startEditor(sorted[elements[0].index].date);
-            tabJournal.click();
-          }
+        onClick: function(ev, els) {
+          if (els.length) { startEditor(sorted[els[0].index].date); document.getElementById("tabJournal").click(); }
         },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(0,0,0,0.8)', padding: 12,
-            titleFont: { size: 14, weight: 'bold' }, bodyFont: { size: 13 },
+            backgroundColor: "rgba(0,0,0,0.8)", padding: 12,
             callbacks: {
-              label: (context) => {
-                const entry = sorted[context.dataIndex];
-                return [`Ánimo: ${context.parsed.y.toFixed(1)}`, entry.title ? `"${entry.title}"` : ''].filter(Boolean);
+              label: function(ctx) {
+                var e = sorted[ctx.dataIndex];
+                var lines = ["Ánimo: " + ctx.parsed.y.toFixed(1)];
+                if (e.title) lines.push('"' + e.title + '"');
+                return lines;
               }
             }
           }
         },
         scales: {
-          y: { beginAtZero: false, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#AAB2D6', font: { weight: '600' } } },
-          x: { grid: { display: false }, ticks: { color: '#AAB2D6', font: { weight: '600' }, maxRotation: 45, minRotation: 45 } }
+          y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#AAB2D6" } },
+          x: { grid: { display: false }, ticks: { color: "#AAB2D6", maxRotation: 45, minRotation: 45 } }
         }
       }
     });
+  }
+
+  function renderBarChart(canvasId, chartRef, labels, data, color, setter) {
+    var wrapper = document.getElementById(canvasId).parentElement;
+    chartRef = destroyChart(chartRef);
+    if (!data.some(function(v) { return v > 0; }) && data.length === 0) {
+      wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>';
+      setter(null); return;
+    }
+    wrapper.innerHTML = '<canvas id="' + canvasId + '"></canvas>';
+    var c = new Chart(document.getElementById(canvasId), {
+      type: "bar",
+      data: { labels: labels, datasets: [{ data: data, backgroundColor: color + "cc", borderColor: color, borderWidth: 2, borderRadius: 8 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: "rgba(0,0,0,0.8)", padding: 12 } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "#AAB2D6", stepSize: 1 } },
+          x: { grid: { display: false }, ticks: { color: "#AAB2D6", maxRotation: 45, minRotation: 45 } }
+        }
+      }
+    });
+    setter(c);
   }
 
   function renderActivitiesChart(filtered) {
-    const wrapper = document.getElementById('chartActivities').parentElement;
-    if (activitiesChart) { activitiesChart.destroy(); activitiesChart = null; }
-    if (filtered.length === 0) { wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>'; return; }
-    wrapper.innerHTML = '<canvas id="chartActivities"></canvas>';
-    const counts = {};
-    ACTIVITIES.forEach(a => counts[a] = 0);
-    filtered.forEach(e => (e.activities || []).forEach(a => { if (counts[a] !== undefined) counts[a]++; }));
-    activitiesChart = new Chart(document.getElementById('chartActivities'), {
-      type: 'bar',
-      data: {
-        labels: Object.keys(counts),
-        datasets: [{ label: 'Frecuencia', data: Object.values(counts), backgroundColor: 'rgba(86,204,242,0.8)', borderColor: '#56CCF2', borderWidth: 2, borderRadius: 8 }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, titleFont: { size: 14, weight: 'bold' }, bodyFont: { size: 13 } } },
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#AAB2D6', font: { weight: '600' }, stepSize: 1 } },
-          x: { grid: { display: false }, ticks: { color: '#AAB2D6', font: { weight: '600' }, maxRotation: 45, minRotation: 45 } }
-        }
-      }
+    var counts = ACTIVITIES.map(function(a) {
+      return filtered.reduce(function(s,e) { return s + ((e.activities||[]).indexOf(a) >= 0 ? 1 : 0); }, 0);
     });
+    renderBarChart("chartActivities", activitiesChart, ACTIVITIES, counts, "#56CCF2",
+      function(c) { activitiesChart = c; });
   }
 
   function renderEmotionsChart(filtered) {
-    const wrapper = document.getElementById('chartEmotions').parentElement;
-    if (emotionsChart) { emotionsChart.destroy(); emotionsChart = null; }
-    if (filtered.length === 0) { wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>'; return; }
-    wrapper.innerHTML = '<canvas id="chartEmotions"></canvas>';
-    const counts = {};
-    EMOTIONS.forEach(e => counts[e] = 0);
-    filtered.forEach(e => (e.emotions || []).forEach(em => { if (counts[em] !== undefined) counts[em]++; }));
-    emotionsChart = new Chart(document.getElementById('chartEmotions'), {
-      type: 'bar',
-      data: {
-        labels: Object.keys(counts),
-        datasets: [{ label: 'Frecuencia', data: Object.values(counts), backgroundColor: 'rgba(255,142,123,0.8)', borderColor: '#FF8E7B', borderWidth: 2, borderRadius: 8 }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, titleFont: { size: 14, weight: 'bold' }, bodyFont: { size: 13 } } },
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#AAB2D6', font: { weight: '600' }, stepSize: 1 } },
-          x: { grid: { display: false }, ticks: { color: '#AAB2D6', font: { weight: '600' }, maxRotation: 45, minRotation: 45 } }
-        }
-      }
+    var counts = EMOTIONS.map(function(em) {
+      return filtered.reduce(function(s,e) { return s + ((e.emotions||[]).indexOf(em) >= 0 ? 1 : 0); }, 0);
     });
+    renderBarChart("chartEmotions", emotionsChart, EMOTIONS, counts, "#FF8E7B",
+      function(c) { emotionsChart = c; });
   }
 
-})();
+  // ── INIT ───────────────────────────────────────────────
+  loadData();
+  renderHome();
+
+}());
 </script>
 </body>
 </html>
