@@ -594,15 +594,47 @@
     }
   };
 
+  const PAGE_SIZE = 30;
+  let currentPage = 0;
+
   function renderHome() {
     entriesListEl.innerHTML = "";
+    currentPage = 0;
     statsLine.textContent = `${entries.length} entradas guardadas`;
 
     if (entries.length === 0) {
       entriesListEl.innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted); font-weight:600;">No hay entradas aún.<br>Pulsa + para empezar.</div>`;
+      return;
     }
 
-    entries.forEach(e => {
+    renderNextPage();
+
+    // Infinite scroll: cargar más al acercarse al fondo
+    const wrap = document.querySelector('.wrap');
+    wrap.removeEventListener('scroll', onListScroll);
+    wrap.addEventListener('scroll', onListScroll);
+  }
+
+  function onListScroll() {
+    const wrap = document.querySelector('.wrap');
+    if (!viewList.classList.contains('active')) return;
+    if (wrap.scrollTop + wrap.clientHeight >= wrap.scrollHeight - 200) {
+      renderNextPage();
+    }
+  }
+
+  function renderNextPage() {
+    const start = currentPage * PAGE_SIZE;
+    const end = Math.min(start + PAGE_SIZE, entries.length);
+    if (start >= entries.length) return;
+
+    // Eliminar el loader si existe
+    const existingLoader = entriesListEl.querySelector('.load-more-indicator');
+    if (existingLoader) existingLoader.remove();
+
+    const fragment = document.createDocumentFragment();
+    for (let i = start; i < end; i++) {
+      const e = entries[i];
       const card = document.createElement("div");
       card.className = "entry-card";
       card.innerHTML = `
@@ -614,8 +646,19 @@
         </div>
       `;
       card.addEventListener("click", () => startEditor(e.date));
-      entriesListEl.appendChild(card);
-    });
+      fragment.appendChild(card);
+    }
+    entriesListEl.appendChild(fragment);
+    currentPage++;
+
+    // Mostrar indicador si quedan más
+    if (end < entries.length) {
+      const loader = document.createElement('div');
+      loader.className = 'load-more-indicator';
+      loader.style.cssText = 'text-align:center; padding:20px; color:var(--muted); font-size:13px; font-weight:600;';
+      loader.textContent = `Mostrando ${end} de ${entries.length} entradas...`;
+      entriesListEl.appendChild(loader);
+    }
   }
 
   function renderCheckGrid(id, items, selectedItems) {
