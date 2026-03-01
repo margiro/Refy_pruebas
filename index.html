@@ -10,6 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
   <style>
     :root {
       --bg-grad: linear-gradient(135deg, #8182DE 0%, #5556e6 100%);
@@ -93,14 +95,14 @@
       <h1>Mi Diario</h1>
       <div class="sub" id="statsLine">Cargando...</div>
     </header>
-    <div class="list-container" id="entriesList"></div>
-    <button class="fab" id="btnNew">+</button>
-    <div style="margin-top:auto;padding-top:20px;text-align:center;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;opacity:.7;">
+    <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;opacity:.7;">
       <button class="btn" id="btnExportCSV" style="font-size:12px;padding:10px 16px;">📊 CSV</button>
       <button class="btn" id="btnExport" style="font-size:12px;padding:10px 16px;">⚙️ JSON</button>
       <input type="file" id="importFile" style="display:none" accept=".json">
       <button class="btn" onclick="document.getElementById('importFile').click()" style="font-size:12px;padding:10px 16px;">📥 Importar</button>
     </div>
+    <div class="list-container" id="entriesList"></div>
+    <button class="fab" id="btnNew">+</button>
   </div>
 
   <!-- EDITOR VIEW -->
@@ -175,7 +177,11 @@
       <div class="stat-card"><div class="stat-value" id="statAvgEmotions">0.00</div><div class="stat-label">Emociones/día</div></div>
     </div>
     <div class="chart-container">
-      <div class="chart-title">📈 Evolución del ánimo</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="chart-title" style="margin-bottom:0;">📈 Evolución del ánimo</div>
+        <button id="btnResetZoom" style="font-size:11px;padding:6px 12px;border:none;background:rgba(0,0,0,0.2);color:var(--muted);border-radius:50px;cursor:pointer;font-weight:600;font-family:inherit;">↺ Reset zoom</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-weight:600;">Pellizca para hacer zoom · Arrastra para navegar</div>
       <div class="chart-wrapper"><canvas id="chartMood"></canvas></div>
     </div>
     <div class="chart-container">
@@ -586,6 +592,17 @@
                 return lines;
               }
             }
+          },
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: "x"
+            },
+            zoom: {
+              wheel: { enabled: false },
+              pinch: { enabled: true },
+              mode: "x"
+            }
           }
         },
         scales: {
@@ -594,12 +611,18 @@
         }
       }
     });
+
+    // Botón reset zoom
+    var btnReset = document.getElementById("btnResetZoom");
+    if (btnReset) {
+      btnReset.onclick = function() { if (moodChart) moodChart.resetZoom(); };
+    }
   }
 
   function renderBarChart(canvasId, chartRef, labels, data, color, setter) {
     var wrapper = document.getElementById(canvasId).parentElement;
     chartRef = destroyChart(chartRef);
-    if (!data.some(function(v) { return v > 0; }) && data.length === 0) {
+    if (data.length === 0 || !data.some(function(v) { return v > 0; })) {
       wrapper.innerHTML = '<div class="empty-chart">No hay datos en este período</div>';
       setter(null); return;
     }
