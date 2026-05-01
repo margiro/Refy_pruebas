@@ -577,9 +577,6 @@
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        onClick: function(ev, els) {
-          if (els.length) { startEditor(sorted[els[0].index].date); document.getElementById("tabJournal").click(); }
-        },
         plugins: {
           legend: { display: false },
           tooltip: {
